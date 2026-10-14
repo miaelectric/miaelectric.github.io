@@ -381,9 +381,56 @@
       display: flex;
     }
 
-    .thief.common { background: radial-gradient(circle at 35% 35%, #353535, #111); }
-    .thief.fast { background: radial-gradient(circle at 35% 35%, #4f2b78, #190f27); }
-    .thief.boss { background: radial-gradient(circle at 35% 35%, #7d1d1d, #220707); box-shadow: 0 0 18px rgba(255,80,80,0.45); }
+    /* 귀여운 도둑: 파스텔 배경 + 도둑 두건 느낌의 테두리 */
+    .thief.common { background: radial-gradient(circle at 35% 35%, #ffe4ef, #ffb3cf); border: 3px solid #3b3b4f; }
+    .thief.fast { background: radial-gradient(circle at 35% 35%, #e3f4ff, #a9d8ff); border: 3px dashed #3b3b4f; }
+    .thief.boss { background: radial-gradient(circle at 35% 35%, #fff4c7, #ffd36b); border: 3px solid #b45309; box-shadow: 0 0 18px rgba(255,200,80,0.7); }
+
+    /* 지역 대표 이모티콘 (집 모양 대신) */
+    .landmark {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 96px;
+      line-height: 1;
+      z-index: 2;
+      filter: drop-shadow(0 6px 8px rgba(0,0,0,0.3));
+    }
+
+    .landmark.cheer {
+      animation: cheer 0.6s ease;
+    }
+
+    /* 대표 이모티콘 위에 덧씌우는 지역명 */
+    .city-name {
+      position: absolute;
+      left: 50%;
+      top: 64%;
+      transform: translateX(-50%);
+      z-index: 10;
+      padding: 3px 14px;
+      font-size: 22px;
+      font-weight: bold;
+      color: #1e293b;
+      background: rgba(255,255,255,0.88);
+      border-radius: 12px;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.25);
+      white-space: nowrap;
+      pointer-events: none;
+    }
+
+    /* 특산물을 들고 달아나는 도둑 */
+    .runner {
+      position: absolute;
+      right: 10px;
+      top: 14px;
+      z-index: 30;
+      font-size: 40px;
+      white-space: nowrap;
+      pointer-events: none;
+      animation: runAway 0.9s ease-in forwards;
+    }
 
     .caught, .missed {
       position: absolute;
@@ -492,6 +539,19 @@
       to { transform: scale(1.08) rotate(2deg); }
     }
 
+    @keyframes cheer {
+      0% { transform: translate(-50%, -50%) scale(1); }
+      40% { transform: translate(-50%, -62%) scale(1.15) rotate(-6deg); }
+      70% { transform: translate(-50%, -48%) scale(1.05) rotate(4deg); }
+      100% { transform: translate(-50%, -50%) scale(1); }
+    }
+
+    @keyframes runAway {
+      0% { transform: translateX(0) translateY(0); opacity: 1; }
+      20% { transform: translateX(-10px) translateY(-6px); }
+      100% { transform: translateX(190px) translateY(4px); opacity: 0; }
+    }
+
     @keyframes pop {
       from { transform: scale(0.6); opacity: 0; }
       to { transform: scale(1); opacity: 1; }
@@ -503,35 +563,130 @@
       100% { opacity: 0; transform: translateX(-50%) translateY(-18px) scale(1.08); }
     }
 
+    /* ===== 화면 크기에 맞춰 자동으로 크기 조절 (휴대폰 ~ 컴퓨터) ===== */
+    body {
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+
+    #gameArea {
+      padding: clamp(8px, 1.5vw, 18px);
+    }
+
+    .houses {
+      gap: clamp(6px, 1.5vw, 18px);
+    }
+
+    .house {
+      min-height: clamp(96px, min(15vw, 14vh), 180px);
+      border-radius: clamp(10px, 1.5vw, 18px);
+    }
+
+    .landmark { font-size: clamp(34px, min(8vw, 9vh), 96px); }
+    .city-name {
+      top: auto;
+      bottom: clamp(6px, 1.4vw, 18px);
+      padding: 2px clamp(6px, 1.2vw, 14px);
+      font-size: clamp(11px, 1.8vw, 22px);
+      border-radius: clamp(6px, 1vw, 12px);
+    }
+    .loot {
+      left: clamp(3px, 0.8vw, 10px);
+      top: clamp(3px, 0.8vw, 10px);
+      font-size: clamp(16px, 2.4vw, 28px);
+    }
+    .thief {
+      right: clamp(2px, 0.5vw, 6px);
+      top: clamp(2px, 0.5vw, 6px);
+      width: clamp(46px, 6.4vw, 76px);
+      height: clamp(46px, 6.4vw, 76px);
+      font-size: clamp(26px, 3.6vw, 42px);
+      touch-action: manipulation;
+    }
+    .caught, .missed {
+      padding: 4px;
+      font-size: clamp(12px, 2.3vw, 28px);
+    }
+    .runner { font-size: clamp(22px, 3.4vw, 40px); }
+    .patrol-car { font-size: clamp(22px, 3.2vw, 38px); left: clamp(10px, 2.5vw, 30px); bottom: clamp(4px, 1.5vw, 18px); }
+    .sea-label { font-size: clamp(11px, 1.8vw, 22px); letter-spacing: clamp(2px, 0.5vw, 6px); }
+    .moon { width: clamp(36px, 6.3vw, 76px); height: clamp(36px, 6.3vw, 76px); right: clamp(8px, 2vw, 24px); top: clamp(6px, 1.5vw, 18px); }
+    .road-h { height: clamp(18px, 4.3vw, 52px); }
+    .road-v { width: clamp(18px, 4.3vw, 52px); }
+    .tree { width: clamp(16px, 2.8vw, 34px); height: clamp(16px, 2.8vw, 34px); }
+
+    /* 태블릿 */
     @media (max-width: 980px) {
       .hud {
         grid-template-columns: repeat(4, 1fr);
       }
-      .houses {
-        grid-template-columns: repeat(2, 1fr);
-        grid-template-rows: none;
-      }
-      .houses .house {
-        grid-column: auto;
-        grid-row: auto;
-      }
-      .sea-label {
-        display: none;
-      }
-      .patrol-car {
-        display: none;
-      }
     }
 
+    /* 휴대폰 */
     @media (max-width: 620px) {
-      .hud {
-        grid-template-columns: repeat(2, 1fr);
-      }
       h1 {
-        font-size: 34px;
+        margin-top: 10px;
+        font-size: 28px;
+      }
+      .sub {
+        font-size: 13px;
+        margin-bottom: 8px;
+      }
+      .hud {
+        gap: 6px;
+        margin-bottom: 8px;
+      }
+      .box {
+        padding: 6px 2px;
+        border-radius: 10px;
+        font-size: 11px;
+      }
+      .box .big {
+        font-size: 18px;
+        margin-top: 2px;
+      }
+      button {
+        padding: 10px 18px;
+        font-size: 16px;
       }
       #message {
-        font-size: 18px;
+        min-height: 24px;
+        margin-bottom: 4px;
+        font-size: 15px;
+        padding: 0 8px;
+      }
+      #tipLine {
+        min-height: 20px;
+        margin-bottom: 8px;
+        font-size: 12px;
+        padding: 0 8px;
+      }
+      #gameArea {
+        border-width: 3px;
+        border-radius: 16px;
+      }
+      .streetlight {
+        display: none;
+      }
+      .house {
+        min-height: 120px;
+      }
+      .landmark {
+        font-size: 42px;
+      }
+      .combo-pop {
+        font-size: 26px;
+        top: 90px;
+      }
+      .overlay-card {
+        padding: 20px 16px;
+        border-radius: 18px;
+      }
+      .overlay-card h2 {
+        font-size: 26px;
+      }
+      .overlay-card p {
+        font-size: 16px;
       }
     }
   </style>
@@ -645,18 +800,18 @@
     }
 
     const GOAL = 10;
-    // 도시 정보: 이름, 특산물(이모지와 이름), 지도에서의 칸 위치(col: 가로 1~5, row: 세로 1~3)
+    // 도시 정보: 이름, 대표 이모티콘(landmark), 특산물(이모지와 이름), 지도에서의 칸 위치(col: 가로 1~5, row: 세로 1~3)
     const CITIES = [
-      { name: "서울", item: "💎", itemName: "보석",   col: 2, row: 1 },
-      { name: "대전", item: "🥖", itemName: "빵",     col: 2, row: 2 },
-      { name: "대구", item: "🍎", itemName: "사과",   col: 4, row: 2 },
-      { name: "부산", item: "🐟", itemName: "생선",   col: 5, row: 3 },
-      { name: "울산", item: "🚗", itemName: "자동차", col: 5, row: 2 },
-      { name: "청산", item: "🌼", itemName: "꽃",     col: 3, row: 3 },
-      { name: "옥천", item: "🍇", itemName: "포도",   col: 3, row: 2 },
-      { name: "의성", item: "🧄", itemName: "마늘",   col: 4, row: 1 },
-      { name: "광주", item: "🥩", itemName: "떡갈비", col: 1, row: 3 },
-      { name: "인천", item: "🍜", itemName: "짜장면", col: 1, row: 1 }
+      { name: "서울", landmark: "🗼", item: "💎", itemName: "보석",   col: 2, row: 1 },
+      { name: "대전", landmark: "🔬", item: "🥖", itemName: "빵",     col: 2, row: 2 },
+      { name: "대구", landmark: "☀️", item: "🍎", itemName: "사과",   col: 4, row: 2 },
+      { name: "부산", landmark: "🌊", item: "🐟", itemName: "생선",   col: 5, row: 3 },
+      { name: "울산", landmark: "🐋", item: "🚗", itemName: "자동차", col: 5, row: 2 },
+      { name: "청산", landmark: "⛰️", item: "🌼", itemName: "꽃",     col: 3, row: 3 },
+      { name: "옥천", landmark: "🏞️", item: "🍇", itemName: "포도",   col: 3, row: 2 },
+      { name: "의성", landmark: "🌾", item: "🧄", itemName: "마늘",   col: 4, row: 1 },
+      { name: "광주", landmark: "🎨", item: "🥩", itemName: "떡갈비", col: 1, row: 3 },
+      { name: "인천", landmark: "✈️", item: "🍜", itemName: "짜장면", col: 1, row: 1 }
     ];
     const CITY_NAMES = CITIES.map(c => c.name);
 
@@ -679,24 +834,19 @@
         house.style.setProperty("--col", CITIES[i].col);
         house.style.setProperty("--row", CITIES[i].row);
         house.innerHTML = `
-          <div class="roof"></div>
-          <div class="house-body">
-            <div class="window left"></div>
-            <div class="window right"></div>
-            <div class="door"></div>
-          </div>
-          <div class="yard"></div>
+          <div class="landmark">${CITIES[i].landmark}</div>
+          <div class="city-name">${CITY_NAMES[i]}</div>
           <div class="loot">${CITIES[i].item}</div>
-          <div class="thief common" data-house="${i}" data-caught="0">👹</div>
-          <div class="caught">🚓 체포!</div>
+          <div class="thief common" data-house="${i}" data-caught="0">🦝</div>
+          <div class="caught">🚓 체포!<br>${CITIES[i].itemName} 지킴</div>
           <div class="missed">💨 ${CITIES[i].itemName}<br>도난!</div>
-          <div class="house-number">${CITY_NAMES[i]}</div>
         `;
         housesEl.appendChild(house);
       }
 
       document.querySelectorAll(".thief").forEach(thief => {
-        thief.addEventListener("click", onCatchThief);
+        // 휴대폰에서도 터치하자마자 바로 반응하도록 pointerdown 사용
+        thief.addEventListener("pointerdown", onCatchThief);
       });
     }
 
@@ -716,7 +866,7 @@
         el.classList.remove("show", "common", "fast", "boss");
         el.classList.add("common");
         el.dataset.caught = "0";
-        el.textContent = "👹";
+        el.textContent = "🦝";
       });
       document.querySelectorAll(".loot").forEach(el => el.classList.remove("show"));
       document.querySelectorAll(".caught").forEach(el => el.classList.remove("show"));
@@ -835,11 +985,11 @@
 
     function chooseThiefType() {
       if (isBossWave(wave)) {
-        return { cls: "boss", icon: "😈" };
+        return { cls: "boss", icon: "😼" };
       }
       const r = Math.random();
-      if (r < 0.2) return { cls: "fast", icon: "👺" };
-      return { cls: "common", icon: "👹" };
+      if (r < 0.2) return { cls: "fast", icon: "🐹" };
+      return { cls: "common", icon: "🦝" };
     }
 
     function updateDifficultyAfterCatch() {
@@ -913,6 +1063,11 @@
             thief.classList.remove("show");
             loot.classList.remove("show");
             house.querySelector(".missed").classList.add("show");
+            const runner = document.createElement("div");
+            runner.className = "runner";
+            runner.textContent = CITIES[idx].item + thief.textContent;
+            house.appendChild(runner);
+            setTimeout(() => runner.remove(), 950);
             escapedThisWave++;
             stolenByCity[idx]++;
             setTimeout(() => {
@@ -962,6 +1117,10 @@
       thief.classList.remove("show");
       loot.classList.remove("show");
       house.querySelector(".caught").classList.add("show");
+      const landmark = house.querySelector(".landmark");
+      landmark.classList.remove("cheer");
+      void landmark.offsetWidth;
+      landmark.classList.add("cheer");
       setTimeout(() => {
         house.querySelector(".caught").classList.remove("show");
       }, 350);
