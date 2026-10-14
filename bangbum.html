@@ -237,7 +237,24 @@
       z-index: 3;
       display: grid;
       grid-template-columns: repeat(5, 1fr);
+      grid-template-rows: repeat(3, auto);
       gap: 18px;
+    }
+
+    /* 실제 지도처럼 도시마다 칸 위치를 정합니다 (--col, --row) */
+    .houses .house {
+      grid-column: var(--col);
+      grid-row: var(--row);
+    }
+
+    .sea-label {
+      position: absolute;
+      z-index: 1;
+      font-size: 22px;
+      font-weight: bold;
+      letter-spacing: 6px;
+      color: rgba(170, 215, 255, 0.45);
+      pointer-events: none;
     }
 
     .house {
@@ -375,8 +392,11 @@
       align-items: center;
       justify-content: center;
       z-index: 25;
-      font-size: 40px;
+      padding: 8px;
+      font-size: 28px;
       font-weight: bold;
+      color: #1e293b;
+      line-height: 1.3;
     }
 
     .caught.show {
@@ -452,7 +472,7 @@
 
     @keyframes patrolMove {
       0% { transform: translateX(0); }
-      50% { transform: translateX(980px); }
+      50% { transform: translateX(var(--patrol-distance, 980px)); }
       100% { transform: translateX(0); }
     }
 
@@ -489,6 +509,14 @@
       }
       .houses {
         grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: none;
+      }
+      .houses .house {
+        grid-column: auto;
+        grid-row: auto;
+      }
+      .sea-label {
+        display: none;
       }
       .patrol-car {
         display: none;
@@ -556,6 +584,10 @@
     <div class="tree" style="left:83%; top:12%;"></div>
     <div class="tree" style="left:92%; top:72%;"></div>
 
+    <div class="sea-label" style="left:5%; top:47%;">서해</div>
+    <div class="sea-label" style="right:7%; top:24%;">동해</div>
+    <div class="sea-label" style="left:27%; bottom:9%;">남해</div>
+
     <div class="patrol-car" id="patrolCar">🚓</div>
     <div class="houses" id="houses"></div>
   </div>
@@ -605,15 +637,47 @@
     let currentWaveId = 0;
     let combo = 0;
     let lastCatchTime = 0;
-    let bestScore = Number(localStorage.getItem("bangbeom_best_score") || 0);
+    let bestScore = 0;
+    try {
+      bestScore = Number(localStorage.getItem("bangbeom_best_score") || 0);
+    } catch (e) {
+      // 사생활 보호 모드 등에서 저장소를 못 쓰면 이번 판 기록만 사용합니다
+    }
 
     const GOAL = 10;
+    // 도시 정보: 이름, 특산물(이모지와 이름), 지도에서의 칸 위치(col: 가로 1~5, row: 세로 1~3)
+    const CITIES = [
+      { name: "서울", item: "💎", itemName: "보석",   col: 2, row: 1 },
+      { name: "대전", item: "🥖", itemName: "빵",     col: 2, row: 2 },
+      { name: "대구", item: "🍎", itemName: "사과",   col: 4, row: 2 },
+      { name: "부산", item: "🐟", itemName: "생선",   col: 5, row: 3 },
+      { name: "울산", item: "🚗", itemName: "자동차", col: 5, row: 2 },
+      { name: "청산", item: "🌼", itemName: "꽃",     col: 3, row: 3 },
+      { name: "옥천", item: "🍇", itemName: "포도",   col: 3, row: 2 },
+      { name: "의성", item: "🧄", itemName: "마늘",   col: 4, row: 1 },
+      { name: "광주", item: "🥩", itemName: "떡갈비", col: 1, row: 3 },
+      { name: "인천", item: "🍜", itemName: "짜장면", col: 1, row: 1 }
+    ];
+    const CITY_NAMES = CITIES.map(c => c.name);
+
+    // 도시별 기록 (게임마다 초기화)
+    let caughtByCity = new Array(CITIES.length).fill(0);
+    let stolenByCity = new Array(CITIES.length).fill(0);
+
+    // 받침에 따라 을/를 고르기
+    function eulReul(word) {
+      const code = word.charCodeAt(word.length - 1) - 0xac00;
+      if (code < 0 || code > 11171) return word + "을(를)";
+      return word + (code % 28 ? "을" : "를");
+    }
 
     function createHouses() {
       housesEl.innerHTML = "";
       for (let i = 0; i < 10; i++) {
         const house = document.createElement("div");
         house.className = "house";
+        house.style.setProperty("--col", CITIES[i].col);
+        house.style.setProperty("--row", CITIES[i].row);
         house.innerHTML = `
           <div class="roof"></div>
           <div class="house-body">
@@ -622,11 +686,11 @@
             <div class="door"></div>
           </div>
           <div class="yard"></div>
-          <div class="loot">💰</div>
+          <div class="loot">${CITIES[i].item}</div>
           <div class="thief common" data-house="${i}" data-caught="0">👹</div>
           <div class="caught">🚓 체포!</div>
-          <div class="missed">💨 도주!</div>
-          <div class="house-number">${i + 1}번 집</div>
+          <div class="missed">💨 ${CITIES[i].itemName}<br>도난!</div>
+          <div class="house-number">${CITY_NAMES[i]}</div>
         `;
         housesEl.appendChild(house);
       }
@@ -662,7 +726,10 @@
     function saveBestScore() {
       if (caughtCount > bestScore) {
         bestScore = caughtCount;
-        localStorage.setItem("bangbeom_best_score", String(bestScore));
+        try {
+          localStorage.setItem("bangbeom_best_score", String(bestScore));
+        } catch (e) {
+        }
       }
       updateHUD();
     }
@@ -674,13 +741,26 @@
       comboPop.classList.add("show");
     }
 
+    // 오디오 장치는 하나만 만들어서 계속 재사용합니다 (소리 끊김 방지)
+    let audioCtx = null;
+    function getAudioCtx() {
+      if (!audioCtx) {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) return null;
+        audioCtx = new AC();
+      }
+      if (audioCtx.state === "suspended") audioCtx.resume();
+      return audioCtx;
+    }
+
     function playSiren() {
       patrolCar.classList.remove("flash");
       void patrolCar.offsetWidth;
       patrolCar.classList.add("flash");
 
       try {
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const ctx = getAudioCtx();
+        if (!ctx) return;
         const gain = ctx.createGain();
         const o1 = ctx.createOscillator();
         const o2 = ctx.createOscillator();
@@ -710,7 +790,8 @@
 
     function playAlertBeep() {
       try {
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const ctx = getAudioCtx();
+        if (!ctx) return;
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.type = "triangle";
@@ -793,11 +874,11 @@
         messageEl.textContent = `보스 웨이브 ${wave}! 대규모 침입이다!`;
         tipLineEl.textContent = "주민 긴급 신고: 동시 출몰 수가 많아졌습니다!";
       } else {
-        messageEl.textContent = `웨이브 ${wave}! 도둑 ${thiefWaveCount}명 출몰!`;
+        messageEl.textContent = `웨이브 ${wave}! ${houseIndices.map(i => CITY_NAMES[i]).join(", ")}에 도둑 ${thiefWaveCount}명 출몰!`;
         const tips = [
-          "주민 신고: 3번 집 근처가 수상합니다.",
+          `주민 신고: ${CITY_NAMES[houseIndices[0]]}의 ${eulReul(CITIES[houseIndices[0]].itemName)} 노리는 수상한 사람이 있습니다.`,
           "주민 신고: 골목 쪽 움직임이 포착됐습니다.",
-          "주민 신고: 돈가방 아이콘이 보이면 바로 클릭하세요.",
+          "주민 신고: 특산물이 흔들리면 도둑이 온 거예요. 바로 클릭하세요.",
           "팁: 연속 체포 시 콤보 보너스 연출이 뜹니다."
         ];
         tipLineEl.textContent = tips[Math.floor(Math.random() * tips.length)];
@@ -833,6 +914,7 @@
             loot.classList.remove("show");
             house.querySelector(".missed").classList.add("show");
             escapedThisWave++;
+            stolenByCity[idx]++;
             setTimeout(() => {
               house.querySelector(".missed").classList.remove("show");
             }, 450);
@@ -873,6 +955,7 @@
       lastCatchTime = now;
 
       thief.dataset.caught = "1";
+      caughtByCity[Number(thief.dataset.house)]++;
       const house = thief.closest(".house");
       const loot = house.querySelector(".loot");
 
@@ -938,6 +1021,22 @@
       return false;
     }
 
+    // 기록이 가장 높은 도시들을 찾아 문장으로 만듭니다
+    function topCities(counts) {
+      const max = Math.max(...counts);
+      if (max === 0) return null;
+      const names = CITIES.filter((c, i) => counts[i] === max).map(c => `${c.name} ${c.item}`);
+      return { names: names.join(", "), count: max };
+    }
+
+    function citySummaryHTML() {
+      const robbed = topCities(stolenByCity);
+      const guarded = topCities(caughtByCity);
+      const robbedText = robbed ? `<b>${robbed.names}</b> (${robbed.count}번 도난)` : "<b>없음, 완벽 방어!</b>";
+      const guardedText = guarded ? `<b>${guarded.names}</b> (${guarded.count}명 체포)` : "<b>아직 없음</b>";
+      return `가장 많이 털린 도시: ${robbedText}<br>가장 잘 지킨 도시: ${guardedText}`;
+    }
+
     function endGame(win, text) {
       if (!gameActive) return;
 
@@ -954,7 +1053,8 @@
         체포 횟수: <b>${caughtCount}</b><br>
         도주 횟수: <b>${escapeCount}</b><br>
         도달 레벨: <b>${level}</b><br>
-        최고기록: <b>${bestScore}</b>
+        최고기록: <b>${bestScore}</b><br><br>
+        ${citySummaryHTML()}
       `;
 
       messageEl.textContent = win ? "방범대장 임무 성공!" : "다시 도전해서 동네를 지켜보자!";
@@ -978,6 +1078,8 @@
       combo = 0;
       lastCatchTime = 0;
       currentWaveId = 0;
+      caughtByCity = new Array(CITIES.length).fill(0);
+      stolenByCity = new Array(CITIES.length).fill(0);
       gameActive = true;
 
       overlay.classList.remove("show");
@@ -993,7 +1095,16 @@
       spawnWave();
     }
 
+    // 순찰차가 게임 영역 안에서만 왕복하도록 이동 거리를 화면 폭에 맞춥니다
+    const gameAreaEl = document.getElementById("gameArea");
+    function fitPatrolRoute() {
+      const distance = Math.max(0, gameAreaEl.clientWidth - patrolCar.offsetWidth - 60);
+      patrolCar.style.setProperty("--patrol-distance", distance + "px");
+    }
+    window.addEventListener("resize", fitPatrolRoute);
+
     createHouses();
+    fitPatrolRoute();
     updateHUD();
 
     startBtn.addEventListener("click", startGame);
