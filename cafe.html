@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>넌테이블 커피</title>
+<meta name="description" content="깊고 진한 원두의 풍미, 가장 부드러운 라떼 — 커피숍 넌테이블">
+<style>
+  :root {
+    --espresso: #140c08;
+    --roast: #24150e;
+    --mocha: #3a2418;
+    --crema: #c98f5a;
+    --gold: #e2b56b;
+    --gold-hi: #f6d9a0;
+    --milk: #f6ead9;
+    --foam: #fffaf2;
+    --soft: #c7b39c;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--espresso);
+    color: var(--milk);
+    font-family: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+    line-height: 1.75;
+    overflow-x: hidden;
+  }
+  .serif { font-family: "Nanum Myeongjo", "AppleMyungjo", "Batang", Georgia, serif; }
+  .gold-text {
+    background: linear-gradient(100deg, var(--crema), var(--gold-hi) 40%, var(--gold) 60%, var(--crema));
+    background-size: 200% auto;
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    animation: shine 6s linear infinite;
+  }
+  @keyframes shine { to { background-position: -200% center; } }
+
+  /* ---------- nav ---------- */
+  nav {
+    position: fixed; inset: 0 0 auto 0; z-index: 20;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 14px 24px; transition: background .4s, backdrop-filter .4s;
+  }
+  nav.scrolled { background: rgba(20, 12, 8, .82); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(226,181,107,.15); }
+  nav .brand { font-size: 1.25rem; font-weight: 700; letter-spacing: .12em; text-decoration: none; }
+  nav .links { display: flex; gap: 22px; }
+  nav .links a { color: var(--soft); text-decoration: none; font-size: .95rem; transition: color .2s; }
+  nav .links a:hover { color: var(--gold-hi); }
+  @media (max-width: 600px) { nav .links { gap: 12px; } nav .links a { font-size: .85rem; } nav { padding: 12px 16px; } }
+
+  /* ---------- hero ---------- */
+  .hero {
+    position: relative; min-height: 100vh; min-height: 100svh;
+    display: grid; place-items: center; text-align: center; padding: 100px 16px 60px;
+    background:
+      radial-gradient(ellipse at 50% 35%, rgba(201,143,90,.28), transparent 60%),
+      radial-gradient(ellipse at 20% 90%, rgba(226,181,107,.12), transparent 50%),
+      linear-gradient(180deg, var(--espresso), var(--roast) 70%, var(--espresso));
+    overflow: hidden;
+  }
+  .bean {
+    position: absolute; width: 26px; height: 36px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #6b3f24, #2a170d 70%);
+    box-shadow: inset 0 0 6px rgba(0,0,0,.6);
+    opacity: .5; animation: float 14s ease-in-out infinite;
+  }
+  .bean::after {
+    content: ""; position: absolute; left: 50%; top: 12%; width: 3px; height: 76%;
+    background: #120a06; border-radius: 3px; transform: translateX(-50%) rotate(8deg);
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0) rotate(var(--r, 0deg)); }
+    50% { transform: translateY(-30px) rotate(calc(var(--r, 0deg) + 25deg)); }
+  }
+
+  .cup-wrap { position: relative; width: 190px; height: 210px; margin: 0 auto 28px; }
+  .steam { position: absolute; bottom: 150px; width: 14px; height: 70px; border-radius: 50%;
+    background: linear-gradient(to top, rgba(255,250,242,.45), transparent);
+    filter: blur(6px); animation: steam 3.6s ease-in-out infinite; }
+  .steam:nth-child(1) { left: 58px; }
+  .steam:nth-child(2) { left: 88px; animation-delay: 1.2s; height: 90px; }
+  .steam:nth-child(3) { left: 118px; animation-delay: 2.4s; }
+  @keyframes steam {
+    0% { transform: translateY(20px) scaleX(1); opacity: 0; }
+    40% { opacity: .9; }
+    100% { transform: translateY(-50px) scaleX(2.4); opacity: 0; }
+  }
+  .cup {
+    position: absolute; bottom: 20px; left: 20px; width: 150px; height: 120px;
+    background: linear-gradient(90deg, #e9dcc9, var(--foam) 45%, #d9c7ae);
+    border-radius: 6px 6px 70px 70px;
+    box-shadow: 0 20px 40px rgba(0,0,0,.55);
+  }
+  .cup::after { /* handle */
+    content: ""; position: absolute; right: -32px; top: 22px; width: 42px; height: 52px;
+    border: 11px solid #e2d4bf; border-left: none; border-radius: 0 30px 30px 0;
+  }
+  .latte {
+    position: absolute; top: -10px; left: 6px; right: 6px; height: 26px; border-radius: 50%;
+    background: radial-gradient(ellipse at center, #f3e2c8 0 18%, #b77a49 19% 30%, #f3e2c8 31% 40%, #a96c3d 41% 100%);
+    box-shadow: inset 0 3px 8px rgba(0,0,0,.35);
+  }
+  .saucer {
+    position: absolute; bottom: 6px; left: 0; width: 190px; height: 26px; border-radius: 50%;
+    background: radial-gradient(ellipse, #efe3d1 55%, #cdb99c);
+    box-shadow: 0 12px 30px rgba(0,0,0,.6);
+  }
+
+  .eyebrow { letter-spacing: .4em; font-size: .85rem; color: var(--gold); margin: 0 0 10px; }
+  .hero h1 { font-size: clamp(3rem, 12vw, 6.5rem); line-height: 1.05; margin: 0 0 18px; letter-spacing: .06em; }
+  .hero .tagline { font-size: clamp(1.1rem, 3.4vw, 1.5rem); color: var(--milk); margin: 0 0 10px; }
+  .hero .tagline b { color: var(--gold-hi); font-weight: 700; }
+  .hero .lead { color: var(--soft); max-width: 520px; margin: 0 auto 34px; }
+  .btn {
+    display: inline-block; padding: 14px 34px; border-radius: 999px; text-decoration: none; font-weight: 700;
+    color: var(--espresso); background: linear-gradient(120deg, var(--gold-hi), var(--crema));
+    box-shadow: 0 10px 30px rgba(226,181,107,.3); transition: transform .2s, box-shadow .2s;
+  }
+  .btn:hover { transform: translateY(-2px); box-shadow: 0 14px 36px rgba(226,181,107,.45); }
+  .scroll-hint { position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%); color: var(--soft); font-size: .8rem; letter-spacing: .2em; animation: bob 2s ease-in-out infinite; }
+  @keyframes bob { 50% { transform: translate(-50%, 6px); } }
+
+  /* ---------- sections ---------- */
+  section { padding: 110px 16px; position: relative; }
+  .wrap { max-width: 1040px; margin: 0 auto; }
+  .kicker { color: var(--gold); letter-spacing: .3em; font-size: .8rem; margin: 0 0 12px; }
+  h1, h2, blockquote, .tagline { word-break: keep-all; }
+  h2 { font-size: clamp(2rem, 5.5vw, 3.2rem); line-height: 1.25; margin: 0 0 20px; }
+  .divider { width: 70px; height: 2px; background: linear-gradient(90deg, var(--gold), transparent); margin: 0 0 28px; }
+  p.body { color: var(--soft); font-size: 1.08rem; max-width: 620px; }
+
+  .reveal { opacity: 0; transform: translateY(40px); transition: opacity 1s ease, transform 1s ease; }
+  .reveal.in { opacity: 1; transform: none; }
+
+  /* bean story */
+  .story { background: linear-gradient(180deg, var(--espresso), var(--roast)); }
+  .story-grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: 60px; align-items: center; }
+  .pillars { display: grid; gap: 16px; }
+  .pillar {
+    display: flex; gap: 18px; align-items: flex-start; padding: 22px;
+    background: linear-gradient(135deg, rgba(58,36,24,.7), rgba(36,21,14,.7));
+    border: 1px solid rgba(226,181,107,.18); border-radius: 18px;
+  }
+  .pillar .ic { font-size: 1.8rem; line-height: 1; }
+  .pillar h3 { margin: 0 0 4px; color: var(--gold-hi); font-size: 1.1rem; }
+  .pillar p { margin: 0; color: var(--soft); font-size: .96rem; }
+  @media (max-width: 820px) { .story-grid { grid-template-columns: 1fr; gap: 36px; } }
+
+  /* flavor meter */
+  .flavor { margin-top: 36px; display: grid; gap: 16px; max-width: 520px; }
+  .meter-label { display: flex; justify-content: space-between; font-size: .95rem; margin-bottom: 6px; }
+  .meter-label span:last-child { color: var(--gold); }
+  .meter { height: 10px; border-radius: 99px; background: rgba(246,234,217,.08); overflow: hidden; }
+  .meter i {
+    display: block; height: 100%; width: 0; border-radius: 99px;
+    background: linear-gradient(90deg, #6b3f24, var(--crema), var(--gold-hi));
+    transition: width 1.8s cubic-bezier(.2,.8,.2,1);
+  }
+
+  /* signature latte */
+  .signature {
+    background:
+      radial-gradient(ellipse at 70% 50%, rgba(246,234,217,.10), transparent 55%),
+      linear-gradient(180deg, var(--roast), var(--mocha) 50%, var(--roast));
+    text-align: center;
+  }
+  .badge {
+    display: inline-block; padding: 6px 18px; border: 1px solid var(--gold); border-radius: 999px;
+    color: var(--gold-hi); font-size: .85rem; letter-spacing: .2em; margin-bottom: 22px;
+  }
+  .art {
+    width: min(300px, 70vw); aspect-ratio: 1; margin: 40px auto; border-radius: 50%;
+    background: radial-gradient(circle, #a96c3d 0 62%, #8a5530 63% 100%);
+    box-shadow: 0 0 0 14px #efe3d1, 0 0 0 16px #cdb99c, 0 30px 80px rgba(0,0,0,.6), 0 0 120px rgba(226,181,107,.2);
+    position: relative; overflow: hidden;
+  }
+  .art svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .art .pour { stroke-dasharray: 900; stroke-dashoffset: 900; }
+  .art.in .pour { animation: draw 3.2s ease forwards; }
+  @keyframes draw { to { stroke-dashoffset: 0; } }
+  .art.in .rosetta { animation: bloom 2.4s .6s ease forwards; }
+  .rosetta { transform-origin: 150px 165px; transform: scale(.3); opacity: 0; }
+  @keyframes bloom { to { transform: scale(1); opacity: 1; } }
+  .signature h2 { margin-bottom: 14px; }
+  .signature p.body { margin: 0 auto; }
+  .notes { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 30px; }
+  .notes span {
+    padding: 8px 18px; border-radius: 999px; background: rgba(246,234,217,.08);
+    border: 1px solid rgba(246,234,217,.15); font-size: .95rem;
+  }
+
+  /* menu */
+  .menu { background: var(--espresso); }
+  .menu-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin-top: 40px; }
+  @media (max-width: 900px) { .menu-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 480px) { .menu-grid { grid-template-columns: 1fr; } }
+  .item {
+    position: relative; padding: 30px 24px; border-radius: 20px; overflow: hidden;
+    background: linear-gradient(160deg, var(--mocha), var(--roast));
+    border: 1px solid rgba(226,181,107,.15);
+    transition: transform .35s, border-color .35s, box-shadow .35s;
+  }
+  .item:hover { transform: translateY(-6px); border-color: rgba(226,181,107,.55); box-shadow: 0 20px 50px rgba(0,0,0,.5), 0 0 40px rgba(226,181,107,.12); }
+  .item .emoji { font-size: 2.4rem; }
+  .item h3 { margin: 12px 0 6px; font-size: 1.25rem; }
+  .item p { margin: 0; color: var(--soft); font-size: .95rem; }
+  .item.star { border-color: rgba(226,181,107,.6); background: linear-gradient(160deg, #5a3722, var(--roast)); }
+  .item.star::before {
+    content: "BEST"; position: absolute; top: 16px; right: -32px; transform: rotate(45deg);
+    background: linear-gradient(90deg, var(--gold-hi), var(--crema)); color: var(--espresso);
+    font-size: .72rem; font-weight: 800; letter-spacing: .15em; padding: 4px 40px;
+  }
+
+  /* promise / closing */
+  .promise {
+    text-align: center;
+    background:
+      radial-gradient(ellipse at 50% 100%, rgba(201,143,90,.3), transparent 60%),
+      linear-gradient(180deg, var(--espresso), var(--roast));
+  }
+  .promise blockquote {
+    margin: 0 auto; max-width: 760px; font-size: clamp(1.5rem, 4.4vw, 2.4rem); line-height: 1.55;
+  }
+  .promise .sign { margin-top: 26px; color: var(--gold); letter-spacing: .3em; }
+  .promise .btn { margin-top: 40px; }
+
+  footer { text-align: center; padding: 40px 16px 56px; color: var(--soft); font-size: .88rem; border-top: 1px solid rgba(226,181,107,.12); }
+  footer a { color: var(--gold); text-decoration: none; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+    .reveal { opacity: 1; transform: none; }
+    .rosetta { opacity: 1; transform: none; }
+    .art .pour { stroke-dashoffset: 0; }
+  }
+</style>
+</head>
+<body>
+
+<nav id="nav">
+  <a class="brand serif gold-text" href="#top">넌테이블</a>
+  <div class="links">
+    <a href="#beans">원두</a>
+    <a href="#latte">라떼</a>
+    <a href="#menu">메뉴</a>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <div id="beans-bg" aria-hidden="true"></div>
+  <div>
+    <div class="cup-wrap" aria-hidden="true">
+      <div class="steam"></div><div class="steam"></div><div class="steam"></div>
+      <div class="saucer"></div>
+      <div class="cup"><div class="latte"></div></div>
+    </div>
+    <p class="eyebrow">COFFEE HOUSE</p>
+    <h1 class="serif gold-text">넌테이블</h1>
+    <p class="tagline serif"><b>깊고 진한</b> 원두의 풍미, 그리고 <b>가장 부드러운</b> 라떼</p>
+    <p class="lead">한 모금에 퍼지는 묵직한 향과 오래 남는 여운.<br>넌테이블은 커피 한 잔에 진심을 담습니다.</p>
+    <a class="btn" href="#latte">시그니처 라떼 보기</a>
+  </div>
+  <div class="scroll-hint">SCROLL ↓</div>
+</header>
+
+<section class="story" id="beans">
+  <div class="wrap story-grid">
+    <div class="reveal">
+      <p class="kicker">OUR BEANS</p>
+      <h2 class="serif">한 잔의 깊이는<br><span class="gold-text">원두</span>에서 시작됩니다</h2>
+      <div class="divider"></div>
+      <p class="body">
+        넌테이블의 커피는 진하고 깊습니다. 엄선한 원두를 정성껏 볶아,
+        첫 모금에는 묵직한 바디감이, 목을 넘긴 뒤에는 다크 초콜릿과 구운 견과의
+        고소한 여운이 길게 이어집니다. 우유를 만나도 흐려지지 않는 힘 있는 풍미 —
+        그것이 넌테이블 커피의 자부심입니다.
+      </p>
+      <div class="flavor" id="flavor">
+        <div><div class="meter-label"><span>바디감</span><span>깊고 묵직하게</span></div><div class="meter"><i data-w="95"></i></div></div>
+        <div><div class="meter-label"><span>향의 진함</span><span>풍부하게</span></div><div class="meter"><i data-w="92"></i></div></div>
+        <div><div class="meter-label"><span>고소함</span><span>길게 남는 여운</span></div><div class="meter"><i data-w="88"></i></div></div>
+        <div><div class="meter-label"><span>산미</span><span>은은하게</span></div><div class="meter"><i data-w="35"></i></div></div>
+      </div>
+    </div>
+    <div class="pillars">
+      <div class="pillar reveal">
+        <div class="ic">🌱</div>
+        <div><h3>엄선한 원두</h3><p>풍미가 깊은 원두만을 골라 넌테이블만의 블렌드를 완성합니다.</p></div>
+      </div>
+      <div class="pillar reveal">
+        <div class="ic">🔥</div>
+        <div><h3>정성스러운 로스팅</h3><p>원두가 가진 진한 향과 단맛이 가장 깊게 피어나는 순간까지 볶아냅니다.</p></div>
+      </div>
+      <div class="pillar reveal">
+        <div class="ic">☕</div>
+        <div><h3>진한 에스프레소</h3><p>매 잔 신선하게 추출해 묵직한 크레마와 깊은 향을 그대로 담아냅니다.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="signature" id="latte">
+  <div class="wrap">
+    <div class="reveal">
+      <span class="badge">SIGNATURE</span>
+      <h2 class="serif">넌테이블 <span class="gold-text">라떼</span></h2>
+      <p class="body">
+        진한 에스프레소 위로 벨벳처럼 고운 우유가 내려앉습니다.<br>
+        깊은 원두의 풍미는 살아 있으면서도, 입안에서는 놀랍도록 부드럽게.<br>
+        넌테이블에서 가장 사랑받는, 가장 부드럽고 맛있는 한 잔입니다.
+      </p>
+    </div>
+    <div class="art" id="art" aria-hidden="true">
+      <svg viewBox="0 0 300 300">
+        <g class="rosetta">
+          <path fill="#f6ead9" d="M150 238 C 95 200, 62 168, 62 128 C 62 96, 86 76, 112 76 C 130 76, 144 88, 150 104 C 156 88, 170 76, 188 76 C 214 76, 238 96, 238 128 C 238 168, 205 200, 150 238 Z"/>
+          <path fill="#c48b5c" opacity=".55" d="M150 205 C 112 180, 92 158, 92 132 C 92 112, 106 100, 122 100 C 134 100, 144 108, 150 120 C 156 108, 166 100, 178 100 C 194 100, 208 112, 208 132 C 208 158, 188 180, 150 205 Z"/>
+          <path fill="#f6ead9" d="M150 180 C 126 164, 114 150, 114 134 C 114 122, 122 116, 132 116 C 140 116, 146 121, 150 128 C 154 121, 160 116, 168 116 C 178 116, 186 122, 186 134 C 186 150, 174 164, 150 180 Z"/>
+        </g>
+        <path class="pour" d="M150 70 L150 245" stroke="#f6ead9" stroke-width="4" stroke-linecap="round" fill="none" opacity=".9"/>
+      </svg>
+    </div>
+    <div class="notes reveal">
+      <span>🥛 벨벳처럼 고운 우유</span>
+      <span>☕ 진한 에스프레소</span>
+      <span>✨ 부드러운 목넘김</span>
+      <span>🍫 고소하고 깊은 여운</span>
+    </div>
+  </div>
+</section>
+
+<section class="menu" id="menu">
+  <div class="wrap">
+    <div class="reveal">
+      <p class="kicker">MENU</p>
+      <h2 class="serif">넌테이블의 <span class="gold-text">추천 메뉴</span></h2>
+      <div class="divider"></div>
+    </div>
+    <div class="menu-grid">
+      <div class="item star reveal">
+        <div class="emoji">🥛</div>
+        <h3 class="serif">넌테이블 라떼</h3>
+        <p>깊은 원두와 고운 우유가 만난, 가장 부드러운 시그니처</p>
+      </div>
+      <div class="item reveal">
+        <div class="emoji">☕</div>
+        <h3 class="serif">에스프레소</h3>
+        <p>원두의 진한 풍미를 가장 순수하게 느끼는 한 잔</p>
+      </div>
+      <div class="item reveal">
+        <div class="emoji">🖤</div>
+        <h3 class="serif">아메리카노</h3>
+        <p>묵직한 바디감과 깔끔한 끝맛, 매일 마시고 싶은 커피</p>
+      </div>
+      <div class="item reveal">
+        <div class="emoji">🍫</div>
+        <h3 class="serif">카페 모카</h3>
+        <p>진한 커피와 초콜릿이 겹겹이 어우러진 달콤한 깊이</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="promise">
+  <div class="wrap reveal">
+    <blockquote class="serif">
+      “커피는 진하게,<br>마음은 <span class="gold-text">부드럽게</span>.”
+    </blockquote>
+    <p class="sign">— 넌테이블 —</p>
+    <a class="btn" href="#top">넌테이블에서 만나요</a>
+  </div>
+</section>
+
+<footer>
+  © <span id="year"></span> 넌테이블 · 깊고 진한 커피, 가장 부드러운 라떼
+</footer>
+
+<script>
+  // floating beans in the hero
+  const beansBg = document.getElementById('beans-bg');
+  for (let i = 0; i < 14; i++) {
+    const b = document.createElement('div');
+    b.className = 'bean';
+    b.style.left = Math.random() * 100 + '%';
+    b.style.top = Math.random() * 100 + '%';
+    b.style.setProperty('--r', Math.floor(Math.random() * 360) + 'deg');
+    b.style.animationDelay = (-Math.random() * 14) + 's';
+    b.style.animationDuration = (10 + Math.random() * 8) + 's';
+    const s = 0.6 + Math.random() * 0.8;
+    b.style.width = 26 * s + 'px';
+    b.style.height = 36 * s + 'px';
+    beansBg.append(b);
+  }
+
+  // nav background on scroll
+  const nav = document.getElementById('nav');
+  const onScroll = () => nav.classList.toggle('scrolled', scrollY > 40);
+  addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  // reveal on scroll + flavor meters + latte art
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (!e.isIntersecting) return;
+      e.target.classList.add('in');
+      if (e.target.id === 'flavor') {
+        e.target.querySelectorAll('.meter i').forEach(m => m.style.width = m.dataset.w + '%');
+      }
+      io.unobserve(e.target);
+    });
+  }, { threshold: 0.2 });
+  document.querySelectorAll('.reveal, #flavor, #art').forEach(n => io.observe(n));
+
+  document.getElementById('year').textContent = new Date().getFullYear();
+</script>
+</body>
+</html>
