@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>스네이크 게임</title>
+<style>
+  :root {
+    --bg: #1a1d23;
+    --panel: #252a33;
+    --grid: #2b313b;
+    --text: #e8ecf1;
+    --muted: #8a94a3;
+    --snake: #4ade80;
+    --snake-head: #22c55e;
+    --food: #f87171;
+    --btn: #323946;
+    --btn-active: #4b5566;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0;
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: system-ui, -apple-system, "Segoe UI", "Malgun Gothic", sans-serif;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px;
+    touch-action: none;
+  }
+  h1 { margin: 4px 0 12px; font-size: 1.5rem; }
+  .scores {
+    display: flex;
+    gap: 12px;
+    width: 100%;
+    max-width: 420px;
+    margin-bottom: 12px;
+  }
+  .score-box {
+    flex: 1;
+    background: var(--panel);
+    border-radius: 10px;
+    padding: 8px 12px;
+    text-align: center;
+  }
+  .score-box .label { font-size: 0.8rem; color: var(--muted); }
+  .score-box .value { font-size: 1.6rem; font-weight: 700; }
+  .board-wrap {
+    position: relative;
+    width: 100%;
+    max-width: 420px;
+    aspect-ratio: 1 / 1;
+  }
+  canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+    background: var(--panel);
+    border-radius: 10px;
+  }
+  .overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    background: rgba(20, 23, 28, 0.78);
+    border-radius: 10px;
+    text-align: center;
+    padding: 16px;
+  }
+  .overlay.hidden { display: none; }
+  .overlay h2 { margin: 0; font-size: 1.6rem; }
+  .overlay p { margin: 0; color: var(--muted); line-height: 1.5; }
+  .start-btn {
+    background: var(--snake-head);
+    color: #0b1a10;
+    border: none;
+    border-radius: 999px;
+    padding: 12px 28px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .controls {
+    display: grid;
+    grid-template-columns: repeat(3, 64px);
+    grid-template-rows: repeat(3, 64px);
+    gap: 8px;
+    margin-top: 16px;
+  }
+  .controls button {
+    background: var(--btn);
+    color: var(--text);
+    border: none;
+    border-radius: 12px;
+    font-size: 1.6rem;
+    cursor: pointer;
+    touch-action: manipulation;
+  }
+  .controls button:active, .controls button.pressed { background: var(--btn-active); }
+  .controls .up    { grid-column: 2; grid-row: 1; }
+  .controls .left  { grid-column: 1; grid-row: 2; }
+  .controls .pause { grid-column: 2; grid-row: 2; font-size: 1.1rem; }
+  .controls .right { grid-column: 3; grid-row: 2; }
+  .controls .down  { grid-column: 2; grid-row: 3; }
+  .name-form { display: flex; gap: 8px; width: 100%; max-width: 260px; }
+  .name-form.hidden { display: none; }
+  .name-form input {
+    flex: 1;
+    min-width: 0;
+    background: var(--bg);
+    color: var(--text);
+    border: 1px solid var(--btn-active);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 1rem;
+    user-select: text;
+    -webkit-user-select: text;
+  }
+  .name-form button {
+    background: var(--btn-active);
+    color: var(--text);
+    border: none;
+    border-radius: 8px;
+    padding: 0 16px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .leaderboard {
+    width: 100%;
+    max-width: 420px;
+    margin-top: 12px;
+    background: var(--panel);
+    border-radius: 10px;
+    padding: 10px 14px;
+  }
+  .leaderboard h3 { margin: 0 0 6px; font-size: 0.95rem; color: var(--muted); font-weight: 600; }
+  .leaderboard ol { list-style: none; margin: 0; padding: 0; }
+  .leaderboard li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 4px;
+    border-radius: 6px;
+  }
+  .leaderboard li + li { border-top: 1px solid var(--grid); }
+  .leaderboard li.new { background: rgba(74, 222, 128, 0.15); }
+  .leaderboard .medal { width: 1.6em; text-align: center; }
+  .leaderboard .name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .leaderboard .pts { font-weight: 700; font-variant-numeric: tabular-nums; }
+  .leaderboard .empty { color: var(--muted); }
+  .hint { margin-top: 12px; font-size: 0.85rem; color: var(--muted); text-align: center; }
+  @media (pointer: fine) and (min-width: 700px) {
+    .controls { display: none; }
+  }
+</style>
+</head>
+<body>
+  <h1>🐍 스네이크</h1>
+
+  <div class="scores">
+    <div class="score-box"><div class="label">점수</div><div class="value" id="score">0</div></div>
+    <div class="score-box"><div class="label">최고 기록</div><div class="value" id="best">0</div></div>
+  </div>
+
+  <div class="board-wrap">
+    <canvas id="board"></canvas>
+    <div class="overlay" id="overlay">
+      <h2 id="overlay-title">스네이크 게임</h2>
+      <p id="overlay-text">먹이를 먹고 길게 자라보세요!<br>벽이나 자기 몸에 부딪히면 끝나요.</p>
+      <form class="name-form hidden" id="name-form" autocomplete="off">
+        <input id="name-input" maxlength="10" placeholder="이름을 적어주세요" aria-label="이름">
+        <button type="submit">등록</button>
+      </form>
+      <button class="start-btn" id="start-btn">시작하기</button>
+    </div>
+  </div>
+
+  <div class="leaderboard">
+    <h3>🏆 명예의 전당 TOP 3</h3>
+    <ol id="leaderboard"></ol>
+  </div>
+
+  <div class="controls">
+    <button class="up" data-dir="up" aria-label="위">▲</button>
+    <button class="left" data-dir="left" aria-label="왼쪽">◀</button>
+    <button class="pause" id="pause-btn" aria-label="일시정지">⏸</button>
+    <button class="right" data-dir="right" aria-label="오른쪽">▶</button>
+    <button class="down" data-dir="down" aria-label="아래">▼</button>
+  </div>
+
+  <div class="hint">방향키 / WASD로 이동 · 스페이스바로 일시정지 · 화면을 밀어서도 조작할 수 있어요</div>
+
+<script>
+(() => {
+  const GRID = 20;
+  const START_SPEED = 140;   // ms per step
+  const MIN_SPEED = 60;
+  const SPEED_STEP = 3;      // faster per food eaten
+  const BEST_KEY = 'snake-best-score';
+
+  const canvas = document.getElementById('board');
+  const ctx = canvas.getContext('2d');
+  const scoreEl = document.getElementById('score');
+  const bestEl = document.getElementById('best');
+  const overlay = document.getElementById('overlay');
+  const overlayTitle = document.getElementById('overlay-title');
+  const overlayText = document.getElementById('overlay-text');
+  const startBtn = document.getElementById('start-btn');
+  const pauseBtn = document.getElementById('pause-btn');
+
+  const DIRS = {
+    up:    { x: 0,  y: -1 },
+    down:  { x: 0,  y: 1 },
+    left:  { x: -1, y: 0 },
+    right: { x: 1,  y: 0 },
+  };
+
+  let snake, dir, dirQueue, food, score, speed, timer;
+  let state = 'ready'; // ready | running | paused | over
+  let cell = 20;
+
+  function loadBest() {
+    try { return parseInt(localStorage.getItem(BEST_KEY), 10) || 0; } catch { return 0; }
+  }
+  function saveBest(v) {
+    try { localStorage.setItem(BEST_KEY, String(v)); } catch {}
+  }
+  let best = loadBest();
+  bestEl.textContent = best;
+
+  // Top 3 leaderboard
+  const BOARD_KEY = 'snake-leaderboard';
+  const NAME_KEY = 'snake-last-name';
+  const boardEl = document.getElementById('leaderboard');
+  const nameForm = document.getElementById('name-form');
+  const nameInput = document.getElementById('name-input');
+  let pendingScore = 0;
+
+  function loadBoard() {
+    try {
+      const list = JSON.parse(localStorage.getItem(BOARD_KEY));
+      return Array.isArray(list) ? list.slice(0, 3) : [];
+    } catch { return []; }
+  }
+  function saveBoard(list) {
+    try { localStorage.setItem(BOARD_KEY, JSON.stringify(list)); } catch {}
+  }
+  let board = loadBoard();
+
+  function qualifies(s) {
+    return s > 0 && (board.length < 3 || s > board[board.length - 1].score);
+  }
+
+  function renderBoard(newIndex = -1) {
+    boardEl.textContent = '';
+    const medals = ['🥇', '🥈', '🥉'];
+    for (let i = 0; i < 3; i++) {
+      const entry = board[i];
+      const li = document.createElement('li');
+      if (i === newIndex) li.className = 'new';
+      const medal = document.createElement('span');
+      medal.className = 'medal';
+      medal.textContent = medals[i];
+      const name = document.createElement('span');
+      name.className = 'name' + (entry ? '' : ' empty');
+      name.textContent = entry ? entry.name : '-';
+      const pts = document.createElement('span');
+      pts.className = 'pts';
+      pts.textContent = entry ? entry.score : '';
+      li.append(medal, name, pts);
+      boardEl.append(li);
+    }
+  }
+  renderBoard();
+
+  nameForm.addEventListener('submit', e => {
+    e.preventDefault();
+    const name = nameInput.value.trim() || '익명';
+    try { localStorage.setItem(NAME_KEY, name); } catch {}
+    const entry = { name, score: pendingScore };
+    board.push(entry);
+    board.sort((a, b) => b.score - a.score);
+    board = board.slice(0, 3);
+    saveBoard(board);
+    renderBoard(board.indexOf(entry));
+    nameForm.classList.add('hidden');
+    nameInput.blur();
+    overlayText.innerHTML = `점수: <b>${pendingScore}</b><br>순위표에 등록됐어요!`;
+    pendingScore = 0;
+    startBtn.focus();
+  });
+
+  function resize() {
+    const size = canvas.clientWidth;
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = Math.round(size * dpr);
+    canvas.height = Math.round(size * dpr);
+    cell = canvas.width / GRID;
+    draw();
+  }
+
+  function reset() {
+    const mid = Math.floor(GRID / 2);
+    snake = [{ x: mid, y: mid }, { x: mid - 1, y: mid }, { x: mid - 2, y: mid }];
+    dir = DIRS.right;
+    dirQueue = [];
+    score = 0;
+    speed = START_SPEED;
+    scoreEl.textContent = 0;
+    placeFood();
+  }
+
+  function placeFood() {
+    const free = [];
+    for (let y = 0; y < GRID; y++) {
+      for (let x = 0; x < GRID; x++) {
+        if (!snake.some(s => s.x === x && s.y === y)) free.push({ x, y });
+      }
+    }
+    food = free.length ? free[Math.floor(Math.random() * free.length)] : null;
+  }
+
+  function setDirection(name) {
+    const next = DIRS[name];
+    if (!next) return;
+    if (state === 'ready' || state === 'over') { start(); }
+    if (state !== 'running') return;
+    // Compare against the last queued direction so quick double-presses work
+    const last = dirQueue.length ? dirQueue[dirQueue.length - 1] : dir;
+    if (next === last || (next.x === -last.x && next.y === -last.y)) return;
+    if (dirQueue.length < 2) dirQueue.push(next);
+  }
+
+  function step() {
+    if (dirQueue.length) dir = dirQueue.shift();
+    const head = { x: snake[0].x + dir.x, y: snake[0].y + dir.y };
+
+    const hitWall = head.x < 0 || head.y < 0 || head.x >= GRID || head.y >= GRID;
+    const eating = food && head.x === food.x && head.y === food.y;
+    // The tail moves away this step unless we're eating, so it's not a collision
+    const body = eating ? snake : snake.slice(0, -1);
+    const hitSelf = body.some(s => s.x === head.x && s.y === head.y);
+
+    if (hitWall || hitSelf) { gameOver(); return; }
+
+    snake.unshift(head);
+    if (eating) {
+      score++;
+      scoreEl.textContent = score;
+      if (score > best) { best = score; bestEl.textContent = best; saveBest(best); }
+      speed = Math.max(MIN_SPEED, speed - SPEED_STEP);
+      placeFood();
+      if (!food) { draw(); win(); return; }
+    } else {
+      snake.pop();
+    }
+    draw();
+    timer = setTimeout(step, speed);
+  }
+
+  function roundRect(x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+
+  function draw() {
+    if (!snake) return;
+    const css = getComputedStyle(document.documentElement);
+    ctx.fillStyle = css.getPropertyValue('--panel');
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // checkerboard
+    ctx.fillStyle = css.getPropertyValue('--grid');
+    for (let y = 0; y < GRID; y++) {
+      for (let x = 0; x < GRID; x++) {
+        if ((x + y) % 2 === 0) ctx.fillRect(x * cell, y * cell, cell, cell);
+      }
+    }
+
+    // food
+    if (food) {
+      ctx.fillStyle = css.getPropertyValue('--food');
+      ctx.beginPath();
+      ctx.arc((food.x + 0.5) * cell, (food.y + 0.5) * cell, cell * 0.38, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // snake
+    const pad = cell * 0.08;
+    snake.forEach((s, i) => {
+      ctx.fillStyle = css.getPropertyValue(i === 0 ? '--snake-head' : '--snake');
+      roundRect(s.x * cell + pad, s.y * cell + pad, cell - pad * 2, cell - pad * 2, cell * 0.25);
+      ctx.fill();
+    });
+
+    // eyes
+    const h = snake[0];
+    const cx = (h.x + 0.5) * cell, cy = (h.y + 0.5) * cell;
+    const off = cell * 0.18, fwd = cell * 0.15;
+    ctx.fillStyle = '#0b1a10';
+    [-1, 1].forEach(side => {
+      const ex = cx + dir.x * fwd + (dir.y !== 0 ? side * off : 0);
+      const ey = cy + dir.y * fwd + (dir.x !== 0 ? side * off : 0);
+      ctx.beginPath();
+      ctx.arc(ex, ey, cell * 0.07, 0, Math.PI * 2);
+      ctx.fill();
+    });
+  }
+
+  function showOverlay(title, text, btn) {
+    overlayTitle.textContent = title;
+    overlayText.innerHTML = text;
+    startBtn.textContent = btn;
+    overlay.classList.remove('hidden');
+  }
+
+  function start() {
+    clearTimeout(timer);
+    nameForm.classList.add('hidden');
+    pendingScore = 0;
+    renderBoard();
+    reset();
+    state = 'running';
+    overlay.classList.add('hidden');
+    pauseBtn.textContent = '⏸';
+    draw();
+    timer = setTimeout(step, speed);
+  }
+
+  function togglePause() {
+    if (state === 'running') {
+      clearTimeout(timer);
+      state = 'paused';
+      pauseBtn.textContent = '▶';
+      showOverlay('일시정지', '스페이스바나 가운데 버튼으로 계속할 수 있어요.', '계속하기');
+    } else if (state === 'paused') {
+      state = 'running';
+      pauseBtn.textContent = '⏸';
+      overlay.classList.add('hidden');
+      timer = setTimeout(step, speed);
+    } else {
+      start();
+    }
+  }
+
+  function gameOver() {
+    clearTimeout(timer);
+    state = 'over';
+    draw();
+    const isBest = score > 0 && score === best;
+    const ranked = qualifies(score);
+    showOverlay('게임 오버',
+      `점수: <b>${score}</b>${isBest ? '<br>🎉 최고 기록 달성!' : ''}` +
+      (ranked ? '<br>TOP 3에 들었어요! 이름을 남겨주세요.' : ''),
+      '다시 하기');
+    if (ranked) askName();
+  }
+
+  function win() {
+    clearTimeout(timer);
+    state = 'over';
+    showOverlay('완벽해요! 🏆', `판을 가득 채웠어요! 점수: <b>${score}</b>`, '다시 하기');
+    if (qualifies(score)) askName();
+  }
+
+  function askName() {
+    pendingScore = score;
+    try { nameInput.value = localStorage.getItem(NAME_KEY) || ''; } catch { nameInput.value = ''; }
+    nameForm.classList.remove('hidden');
+    // Don't pop the keyboard up automatically on touch devices
+    if (window.matchMedia('(pointer: fine)').matches) nameInput.focus();
+  }
+
+  // Keyboard
+  const KEYMAP = {
+    ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right',
+    w: 'up', s: 'down', a: 'left', d: 'right',
+    W: 'up', S: 'down', A: 'left', D: 'right',
+  };
+  document.addEventListener('keydown', e => {
+    if (e.target === nameInput) return; // typing a name, not steering
+    if (KEYMAP[e.key]) {
+      e.preventDefault();
+      setDirection(KEYMAP[e.key]);
+    } else if (e.key === ' ' || e.key === 'Enter') {
+      e.preventDefault();
+      if (state === 'paused' || state === 'running') togglePause();
+      else start();
+    }
+  });
+
+  // On-screen buttons (pointerdown for instant response on touch)
+  document.querySelectorAll('.controls button[data-dir]').forEach(btn => {
+    btn.addEventListener('pointerdown', e => {
+      e.preventDefault();
+      setDirection(btn.dataset.dir);
+    });
+  });
+  pauseBtn.addEventListener('pointerdown', e => { e.preventDefault(); togglePause(); });
+  startBtn.addEventListener('click', () => {
+    if (state === 'paused') togglePause(); else start();
+  });
+
+  // Swipe on the board
+  let touchStart = null;
+  canvas.addEventListener('touchstart', e => {
+    const t = e.touches[0];
+    touchStart = { x: t.clientX, y: t.clientY };
+  }, { passive: true });
+  canvas.addEventListener('touchend', e => {
+    if (!touchStart) return;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - touchStart.x, dy = t.clientY - touchStart.y;
+    touchStart = null;
+    if (Math.max(Math.abs(dx), Math.abs(dy)) < 20) return;
+    if (Math.abs(dx) > Math.abs(dy)) setDirection(dx > 0 ? 'right' : 'left');
+    else setDirection(dy > 0 ? 'down' : 'up');
+  }, { passive: true });
+
+  // Pause when tab is hidden
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden && state === 'running') togglePause();
+  });
+
+  window.addEventListener('resize', resize);
+  reset();
+  resize();
+})();
+</script>
+</body>
+</html>
