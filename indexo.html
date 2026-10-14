@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>miaelectric의 첫 홈페이지</title>
+<style>
+  :root {
+    --sky: #dcebf5;
+    --ink: #1b2a4a;
+    --soft: #4a5d80;
+    --star: #f2b705;
+    --field: #ffffff;
+    --line: #b7cde0;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --sky: #14203a;
+      --ink: #e6eef7;
+      --soft: #9fb3cf;
+      --star: #ffc93c;
+      --field: #1d2c4d;
+      --line: #2f4470;
+      color-scheme: dark;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--sky);
+    color: var(--ink);
+    font-family: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    line-height: 1.6;
+  }
+  main { max-width: 720px; margin: 0 auto; padding: 56px 20px 72px; }
+  h1 { font-size: clamp(2rem, 6vw, 3.2rem); line-height: 1.15; margin: 0 0 16px; letter-spacing: -0.02em; }
+  .lead { color: var(--soft); font-size: 1.1rem; margin: 0 0 8px; }
+  #clock { color: var(--soft); font-variant-numeric: tabular-nums; margin: 0 0 48px; }
+  h2 { font-size: 1.4rem; margin: 0 0 6px; }
+  .board {
+    position: relative; height: 340px; margin: 16px 0;
+    background: var(--field); border: 2px solid var(--line); border-radius: 14px;
+    overflow: hidden; touch-action: manipulation;
+  }
+  #target {
+    position: absolute; width: 56px; height: 56px; border: 0; padding: 0;
+    background: none; font-size: 44px; line-height: 56px; cursor: pointer;
+    display: none; transition: transform .08s;
+  }
+  #target:active { transform: scale(.85); }
+  #message {
+    position: absolute; inset: 0; display: grid; place-items: center;
+    text-align: center; padding: 20px; color: var(--soft);
+  }
+  .bar { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: center; }
+  .bar span { font-variant-numeric: tabular-nums; }
+  button.start {
+    font: inherit; font-weight: 700; padding: 10px 22px; border-radius: 999px;
+    border: 0; background: var(--ink); color: var(--sky); cursor: pointer;
+  }
+  button:focus-visible { outline: 3px solid var(--star); outline-offset: 3px; }
+  footer { margin-top: 56px; color: var(--soft); font-size: .9rem; }
+  @media (prefers-reduced-motion: reduce) { #target { transition: none; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>안녕하세요!<br>GitHub Pages에 올린 첫 홈페이지예요</h1>
+  <p class="lead">이 페이지는 index.html 파일 하나로 만들어졌어요.</p>
+  <p id="clock">지금 시각을 불러오는 중…</p>
+
+  <h2>별 잡기 게임</h2>
+  <p class="lead">10초 동안 나타나는 별을 최대한 많이 눌러보세요.</p>
+
+  <div class="board" id="board">
+    <div id="message">시작 버튼을 누르면 게임이 시작돼요</div>
+    <button id="target" aria-label="별">⭐</button>
+  </div>
+
+  <div class="bar">
+    <button class="start" id="start">게임 시작</button>
+    <span>점수 <strong id="score">0</strong></span>
+    <span>남은 시간 <strong id="time">10</strong>초</span>
+    <span>최고 기록 <strong id="best">0</strong></span>
+  </div>
+
+  <footer>made by miaelectric · 2026</footer>
+</main>
+
+<script>
+  // 시계: 자바스크립트가 잘 동작하는지 확인용
+  const clock = document.getElementById('clock');
+  function tick() {
+    clock.textContent = '지금 시각 ' + new Date().toLocaleString('ko-KR');
+  }
+  tick();
+  setInterval(tick, 1000);
+
+  // 별 잡기 게임
+  const board = document.getElementById('board');
+  const target = document.getElementById('target');
+  const message = document.getElementById('message');
+  const startBtn = document.getElementById('start');
+  const scoreEl = document.getElementById('score');
+  const timeEl = document.getElementById('time');
+  const bestEl = document.getElementById('best');
+
+  let score = 0, timeLeft = 10, timer = null, best = 0;
+  try { best = Number(localStorage.getItem('starBest')) || 0; } catch (e) {}
+  bestEl.textContent = best;
+
+  function moveStar() {
+    const maxX = board.clientWidth - 56;
+    const maxY = board.clientHeight - 56;
+    target.style.left = Math.random() * maxX + 'px';
+    target.style.top = Math.random() * maxY + 'px';
+  }
+
+  function startGame() {
+    score = 0; timeLeft = 10;
+    scoreEl.textContent = score;
+    timeEl.textContent = timeLeft;
+    message.style.display = 'none';
+    target.style.display = 'block';
+    startBtn.disabled = true;
+    moveStar();
+    timer = setInterval(() => {
+      timeLeft--;
+      timeEl.textContent = timeLeft;
+      if (timeLeft <= 0) endGame();
+    }, 1000);
+  }
+
+  function endGame() {
+    clearInterval(timer);
+    target.style.display = 'none';
+    startBtn.disabled = false;
+    startBtn.textContent = '다시 하기';
+    let text = score + '개를 잡았어요!';
+    if (score > best) {
+      best = score;
+      bestEl.textContent = best;
+      try { localStorage.setItem('starBest', best); } catch (e) {}
+      text += ' 최고 기록이에요 🎉';
+    }
+    message.textContent = text;
+    message.style.display = 'grid';
+  }
+
+  target.addEventListener('click', () => {
+    score++;
+    scoreEl.textContent = score;
+    moveStar();
+  });
+  startBtn.addEventListener('click', startGame);
+</script>
+</body>
+</html>
