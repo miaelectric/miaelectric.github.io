@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>방범대장 - 업그레이드판</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      color: #e5eefc;
+      text-align: center;
+      background:
+        radial-gradient(circle at 20% 15%, rgba(255,255,255,0.15), transparent 10%),
+        radial-gradient(circle at 80% 12%, rgba(255,255,255,0.12), transparent 12%),
+        linear-gradient(to bottom, #0d1530 0%, #132042 38%, #1c2c4c 55%, #24462d 55%, #2f6a36 100%);
+      overflow-x: hidden;
+    }
+
+    h1 {
+      margin: 16px 0 6px;
+      font-size: 42px;
+      color: #ffffff;
+      text-shadow: 0 0 10px rgba(112, 185, 255, 0.45);
+    }
+
+    .sub {
+      margin-bottom: 12px;
+      font-size: 16px;
+      font-weight: bold;
+      color: #cfe3ff;
+    }
+
+    .hud {
+      width: min(1180px, 96vw);
+      margin: 0 auto 12px;
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 10px;
+    }
+
+    .box {
+      background: rgba(15, 23, 42, 0.78);
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      border-radius: 14px;
+      padding: 10px 6px;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.22);
+      font-size: 16px;
+      font-weight: bold;
+      color: #f8fbff;
+    }
+
+    .box .big {
+      display: block;
+      margin-top: 4px;
+      font-size: 24px;
+      color: #8bd3ff;
+    }
+
+    .controls {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+
+    button {
+      padding: 12px 22px;
+      border: none;
+      border-radius: 12px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+    }
+
+    #startBtn {
+      background: #2563eb;
+      color: white;
+    }
+
+    #restartBtn {
+      background: #ef4444;
+      color: white;
+      display: none;
+    }
+
+    #message {
+      min-height: 32px;
+      margin-bottom: 10px;
+      font-size: 22px;
+      font-weight: bold;
+      color: #f8fbff;
+    }
+
+    #tipLine {
+      min-height: 24px;
+      margin-bottom: 12px;
+      font-size: 15px;
+      color: #c7d9ff;
+    }
+
+    #gameArea {
+      position: relative;
+      width: min(1200px, 96vw);
+      margin: 0 auto 28px;
+      padding: 18px 18px 22px;
+      border-radius: 24px;
+      border: 4px solid #355b2f;
+      background:
+        radial-gradient(circle at 18% 15%, rgba(255,255,180,0.08), transparent 12%),
+        radial-gradient(circle at 82% 20%, rgba(255,255,180,0.08), transparent 12%),
+        linear-gradient(135deg, #345f34 0%, #305b31 35%, #2d572f 100%);
+      box-shadow: 0 14px 28px rgba(0,0,0,0.28);
+      overflow: hidden;
+    }
+
+    .moon {
+      position: absolute;
+      right: 24px;
+      top: 18px;
+      width: 76px;
+      height: 76px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #fff8d6, #d7e7ff 70%);
+      box-shadow: 0 0 28px rgba(255, 255, 200, 0.32);
+      z-index: 0;
+    }
+
+    .road-h, .road-v {
+      position: absolute;
+      background: #5c6470;
+      border-radius: 14px;
+      box-shadow: inset 0 0 0 3px rgba(255,255,255,0.08);
+      z-index: 0;
+    }
+
+    .road-h::after, .road-v::after {
+      content: "";
+      position: absolute;
+      opacity: 0.85;
+    }
+
+    .road-h {
+      height: 52px;
+      left: 2%;
+      right: 2%;
+    }
+
+    .road-h.r1 { top: 18%; }
+    .road-h.r2 { top: 49%; }
+    .road-h.r3 { top: 80%; }
+
+    .road-h::after {
+      left: 14px;
+      right: 14px;
+      top: 50%;
+      height: 4px;
+      transform: translateY(-50%);
+      background-image: repeating-linear-gradient(to right, #f4e7a4 0 16px, transparent 16px 34px);
+    }
+
+    .road-v {
+      width: 52px;
+      top: 2%;
+      bottom: 2%;
+    }
+
+    .road-v.c1 { left: 19%; }
+    .road-v.c2 { left: 50%; transform: translateX(-50%); }
+    .road-v.c3 { right: 19%; }
+
+    .road-v::after {
+      top: 14px;
+      bottom: 14px;
+      left: 50%;
+      width: 4px;
+      transform: translateX(-50%);
+      background-image: repeating-linear-gradient(to bottom, #f4e7a4 0 16px, transparent 16px 34px);
+    }
+
+    .streetlight {
+      position: absolute;
+      width: 10px;
+      height: 56px;
+      background: #4b5563;
+      border-radius: 4px;
+      z-index: 1;
+    }
+
+    .streetlight::before {
+      content: "";
+      position: absolute;
+      top: -8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #fff1a8;
+      box-shadow: 0 0 18px rgba(255, 241, 168, 0.75);
+    }
+
+    .tree {
+      position: absolute;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: #2f8b41;
+      box-shadow:
+        0 12px 0 -7px #5b4128,
+        inset -6px -6px 0 rgba(0,0,0,0.1);
+      z-index: 1;
+    }
+
+    .patrol-car {
+      position: absolute;
+      left: 30px;
+      bottom: 18px;
+      font-size: 38px;
+      z-index: 2;
+      animation: patrolMove 5s linear infinite;
+      filter: drop-shadow(0 6px 8px rgba(0,0,0,0.35));
+    }
+
+    .patrol-car.flash {
+      animation: patrolMove 5s linear infinite, patrolFlash 0.3s ease 4;
+    }
+
+    .houses {
+      position: relative;
+      z-index: 3;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 18px;
+    }
+
+    .house {
+      position: relative;
+      min-height: 180px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.06);
+      overflow: hidden;
+    }
+
+    .roof {
+      position: absolute;
+      top: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 60px solid transparent;
+      border-right: 60px solid transparent;
+      border-bottom: 50px solid #a93333;
+      z-index: 3;
+      filter: drop-shadow(0 4px 2px rgba(0,0,0,0.25));
+    }
+
+    .house-body {
+      position: absolute;
+      left: 50%;
+      bottom: 16px;
+      transform: translateX(-50%);
+      width: 118px;
+      height: 106px;
+      background: #f1ddb4;
+      border: 3px solid #475569;
+      border-bottom-left-radius: 16px;
+      border-bottom-right-radius: 16px;
+      box-shadow: inset 0 -10px 0 rgba(0,0,0,0.05);
+      z-index: 2;
+    }
+
+    .door {
+      position: absolute;
+      width: 26px;
+      height: 42px;
+      background: #865630;
+      border: 2px solid #4b2f18;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      border-top-left-radius: 8px;
+      border-top-right-radius: 8px;
+    }
+
+    .window {
+      position: absolute;
+      top: 20px;
+      width: 22px;
+      height: 22px;
+      background: #fff7a8;
+      border: 2px solid #475569;
+      box-shadow: 0 0 8px rgba(255, 247, 168, 0.45);
+    }
+
+    .window.left { left: 14px; }
+    .window.right { right: 14px; }
+
+    .yard {
+      position: absolute;
+      left: 14px;
+      right: 14px;
+      bottom: 2px;
+      height: 18px;
+      background: rgba(44, 111, 39, 0.45);
+      border-radius: 10px;
+      z-index: 1;
+    }
+
+    .house-number {
+      position: absolute;
+      left: 8px;
+      bottom: 4px;
+      z-index: 20;
+      font-size: 13px;
+      font-weight: bold;
+      color: #1e293b;
+      background: rgba(255,255,255,0.85);
+      padding: 2px 6px;
+      border-radius: 8px;
+    }
+
+    .loot {
+      position: absolute;
+      left: 10px;
+      top: 10px;
+      font-size: 28px;
+      display: none;
+      z-index: 15;
+      animation: lootShake 0.7s infinite alternate;
+      filter: drop-shadow(0 3px 5px rgba(0,0,0,0.25));
+    }
+
+    .loot.show {
+      display: block;
+    }
+
+    .thief {
+      position: absolute;
+      right: 6px;
+      top: 6px;
+      width: 76px;
+      height: 76px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      z-index: 16;
+      cursor: pointer;
+      user-select: none;
+      font-size: 42px;
+      animation: thiefPulse 0.6s infinite alternate;
+      filter: drop-shadow(0 5px 8px rgba(0,0,0,0.42));
+    }
+
+    .thief.show {
+      display: flex;
+    }
+
+    .thief.common { background: radial-gradient(circle at 35% 35%, #353535, #111); }
+    .thief.fast { background: radial-gradient(circle at 35% 35%, #4f2b78, #190f27); }
+    .thief.boss { background: radial-gradient(circle at 35% 35%, #7d1d1d, #220707); box-shadow: 0 0 18px rgba(255,80,80,0.45); }
+
+    .caught, .missed {
+      position: absolute;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 25;
+      font-size: 40px;
+      font-weight: bold;
+    }
+
+    .caught.show {
+      display: flex;
+      background: rgba(205,255,215,0.82);
+      animation: pop 0.25s ease;
+    }
+
+    .missed.show {
+      display: flex;
+      background: rgba(255,210,210,0.82);
+      animation: pop 0.25s ease;
+    }
+
+    .combo-pop {
+      position: fixed;
+      left: 50%;
+      top: 120px;
+      transform: translateX(-50%);
+      z-index: 120;
+      font-size: 34px;
+      font-weight: bold;
+      color: #ffe27a;
+      text-shadow: 0 4px 10px rgba(0,0,0,0.4);
+      pointer-events: none;
+      display: none;
+    }
+
+    .combo-pop.show {
+      display: block;
+      animation: comboRise 0.9s ease forwards;
+    }
+
+    #overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 150;
+      background: rgba(2, 6, 23, 0.75);
+      padding: 16px;
+    }
+
+    #overlay.show {
+      display: flex;
+    }
+
+    .overlay-card {
+      width: min(560px, 94vw);
+      background: linear-gradient(to bottom, #ffffff, #e8f0ff);
+      color: #0f172a;
+      border-radius: 24px;
+      padding: 28px 22px;
+      box-shadow: 0 20px 44px rgba(0,0,0,0.34);
+    }
+
+    .overlay-card h2 {
+      margin-top: 0;
+      font-size: 34px;
+    }
+
+    .overlay-card p {
+      font-size: 20px;
+      line-height: 1.55;
+      margin: 10px 0;
+    }
+
+    .hearts {
+      letter-spacing: 4px;
+      color: #ff6b6b;
+    }
+
+    @keyframes patrolMove {
+      0% { transform: translateX(0); }
+      50% { transform: translateX(980px); }
+      100% { transform: translateX(0); }
+    }
+
+    @keyframes patrolFlash {
+      0% { filter: drop-shadow(0 0 0 rgba(255,0,0,0)); }
+      50% { filter: drop-shadow(0 0 16px rgba(255,0,0,0.85)) drop-shadow(0 0 20px rgba(0,120,255,0.7)); }
+      100% { filter: drop-shadow(0 0 0 rgba(255,0,0,0)); }
+    }
+
+    @keyframes lootShake {
+      from { transform: rotate(-10deg) translateY(0); }
+      to { transform: rotate(10deg) translateY(-4px); }
+    }
+
+    @keyframes thiefPulse {
+      from { transform: scale(1) rotate(-2deg); }
+      to { transform: scale(1.08) rotate(2deg); }
+    }
+
+    @keyframes pop {
+      from { transform: scale(0.6); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    @keyframes comboRise {
+      0% { opacity: 0; transform: translateX(-50%) translateY(18px) scale(0.8); }
+      25% { opacity: 1; }
+      100% { opacity: 0; transform: translateX(-50%) translateY(-18px) scale(1.08); }
+    }
+
+    @media (max-width: 980px) {
+      .hud {
+        grid-template-columns: repeat(4, 1fr);
+      }
+      .houses {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .patrol-car {
+        display: none;
+      }
+    }
+
+    @media (max-width: 620px) {
+      .hud {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      h1 {
+        font-size: 34px;
+      }
+      #message {
+        font-size: 18px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>방범대장</h1>
+  <div class="sub">주민 신고를 받고 1분 안에 도둑 10명을 잡아라!</div>
+
+  <div class="hud">
+    <div class="box">체포<span class="big" id="caughtCount">0</span></div>
+    <div class="box">도주<span class="big" id="escapeCount">0</span></div>
+    <div class="box">남은 시간<span class="big" id="gameTime">60</span></div>
+    <div class="box">레벨<span class="big" id="level">1</span></div>
+    <div class="box">웨이브<span class="big" id="wave">1</span></div>
+    <div class="box">출몰 수<span class="big" id="thiefCount">1</span></div>
+    <div class="box">목숨<span class="big hearts" id="lives">♥♥♥</span></div>
+    <div class="box">최고기록<span class="big" id="bestScore">0</span></div>
+  </div>
+
+  <div class="controls">
+    <button id="startBtn">게임 시작</button>
+    <button id="restartBtn">다시시작</button>
+  </div>
+
+  <div id="message">시작 버튼을 누르면 순찰이 시작됩니다.</div>
+  <div id="tipLine">팁: 연속으로 빨리 잡으면 콤보가 올라갑니다.</div>
+
+  <div id="gameArea">
+    <div class="moon"></div>
+
+    <div class="road-h r1"></div>
+    <div class="road-h r2"></div>
+    <div class="road-h r3"></div>
+    <div class="road-v c1"></div>
+    <div class="road-v c2"></div>
+    <div class="road-v c3"></div>
+
+    <div class="streetlight" style="left:8%; top:12%;"></div>
+    <div class="streetlight" style="left:30%; top:62%;"></div>
+    <div class="streetlight" style="left:52%; top:12%;"></div>
+    <div class="streetlight" style="left:74%; top:62%;"></div>
+    <div class="streetlight" style="left:90%; top:18%;"></div>
+
+    <div class="tree" style="left:4%; top:8%;"></div>
+    <div class="tree" style="left:12%; top:70%;"></div>
+    <div class="tree" style="left:27%; top:8%;"></div>
+    <div class="tree" style="left:39%; top:74%;"></div>
+    <div class="tree" style="left:58%; top:10%;"></div>
+    <div class="tree" style="left:67%; top:76%;"></div>
+    <div class="tree" style="left:83%; top:12%;"></div>
+    <div class="tree" style="left:92%; top:72%;"></div>
+
+    <div class="patrol-car" id="patrolCar">🚓</div>
+    <div class="houses" id="houses"></div>
+  </div>
+
+  <div class="combo-pop" id="comboPop"></div>
+
+  <div id="overlay">
+    <div class="overlay-card">
+      <h2 id="overlayTitle">게임 종료</h2>
+      <p id="overlayText"></p>
+      <button id="overlayRestartBtn" style="background:#2563eb; color:white;">다시 도전</button>
+    </div>
+  </div>
+
+  <script>
+    const housesEl = document.getElementById("houses");
+    const startBtn = document.getElementById("startBtn");
+    const restartBtn = document.getElementById("restartBtn");
+    const overlay = document.getElementById("overlay");
+    const overlayTitle = document.getElementById("overlayTitle");
+    const overlayText = document.getElementById("overlayText");
+    const overlayRestartBtn = document.getElementById("overlayRestartBtn");
+    const patrolCar = document.getElementById("patrolCar");
+
+    const caughtCountEl = document.getElementById("caughtCount");
+    const escapeCountEl = document.getElementById("escapeCount");
+    const gameTimeEl = document.getElementById("gameTime");
+    const levelEl = document.getElementById("level");
+    const waveEl = document.getElementById("wave");
+    const thiefCountEl = document.getElementById("thiefCount");
+    const livesEl = document.getElementById("lives");
+    const bestScoreEl = document.getElementById("bestScore");
+    const messageEl = document.getElementById("message");
+    const tipLineEl = document.getElementById("tipLine");
+    const comboPop = document.getElementById("comboPop");
+
+    let caughtCount = 0;
+    let escapeCount = 0;
+    let level = 1;
+    let wave = 1;
+    let thiefWaveCount = 1;
+    let totalTime = 60;
+    let lives = 3;
+    let gameActive = false;
+    let gameTimer = null;
+    let waveTimer = null;
+    let currentWaveId = 0;
+    let combo = 0;
+    let lastCatchTime = 0;
+    let bestScore = Number(localStorage.getItem("bangbeom_best_score") || 0);
+
+    const GOAL = 10;
+
+    function createHouses() {
+      housesEl.innerHTML = "";
+      for (let i = 0; i < 10; i++) {
+        const house = document.createElement("div");
+        house.className = "house";
+        house.innerHTML = `
+          <div class="roof"></div>
+          <div class="house-body">
+            <div class="window left"></div>
+            <div class="window right"></div>
+            <div class="door"></div>
+          </div>
+          <div class="yard"></div>
+          <div class="loot">💰</div>
+          <div class="thief common" data-house="${i}" data-caught="0">👹</div>
+          <div class="caught">🚓 체포!</div>
+          <div class="missed">💨 도주!</div>
+          <div class="house-number">${i + 1}번 집</div>
+        `;
+        housesEl.appendChild(house);
+      }
+
+      document.querySelectorAll(".thief").forEach(thief => {
+        thief.addEventListener("click", onCatchThief);
+      });
+    }
+
+    function updateHUD() {
+      caughtCountEl.textContent = caughtCount;
+      escapeCountEl.textContent = escapeCount;
+      gameTimeEl.textContent = totalTime;
+      levelEl.textContent = level;
+      waveEl.textContent = wave;
+      thiefCountEl.textContent = thiefWaveCount;
+      livesEl.textContent = "♥".repeat(lives) + "♡".repeat(Math.max(0, 3 - lives));
+      bestScoreEl.textContent = bestScore;
+    }
+
+    function resetEffects() {
+      document.querySelectorAll(".thief").forEach(el => {
+        el.classList.remove("show", "common", "fast", "boss");
+        el.classList.add("common");
+        el.dataset.caught = "0";
+        el.textContent = "👹";
+      });
+      document.querySelectorAll(".loot").forEach(el => el.classList.remove("show"));
+      document.querySelectorAll(".caught").forEach(el => el.classList.remove("show"));
+      document.querySelectorAll(".missed").forEach(el => el.classList.remove("show"));
+    }
+
+    function saveBestScore() {
+      if (caughtCount > bestScore) {
+        bestScore = caughtCount;
+        localStorage.setItem("bangbeom_best_score", String(bestScore));
+      }
+      updateHUD();
+    }
+
+    function showCombo(text) {
+      comboPop.textContent = text;
+      comboPop.classList.remove("show");
+      void comboPop.offsetWidth;
+      comboPop.classList.add("show");
+    }
+
+    function playSiren() {
+      patrolCar.classList.remove("flash");
+      void patrolCar.offsetWidth;
+      patrolCar.classList.add("flash");
+
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const gain = ctx.createGain();
+        const o1 = ctx.createOscillator();
+        const o2 = ctx.createOscillator();
+
+        o1.type = "sawtooth";
+        o2.type = "square";
+        o1.frequency.setValueAtTime(820, ctx.currentTime);
+        o1.frequency.linearRampToValueAtTime(620, ctx.currentTime + 0.14);
+        o2.frequency.setValueAtTime(600, ctx.currentTime);
+        o2.frequency.linearRampToValueAtTime(890, ctx.currentTime + 0.14);
+
+        gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.05, ctx.currentTime + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.28);
+
+        o1.connect(gain);
+        o2.connect(gain);
+        gain.connect(ctx.destination);
+
+        o1.start();
+        o2.start();
+        o1.stop(ctx.currentTime + 0.3);
+        o2.stop(ctx.currentTime + 0.3);
+      } catch (e) {
+      }
+    }
+
+    function playAlertBeep() {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "triangle";
+        osc.frequency.setValueAtTime(520, ctx.currentTime);
+        gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.03, ctx.currentTime + 0.01);
+        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.18);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.2);
+      } catch (e) {
+      }
+    }
+
+    function getLevelByCatch(count) {
+      if (count >= 8) return 4;
+      if (count >= 5) return 3;
+      if (count >= 2) return 2;
+      return 1;
+    }
+
+    function getWaveDuration() {
+      if (level === 1) return 2300;
+      if (level === 2) return 1800;
+      if (level === 3) return 1450;
+      return 1100;
+    }
+
+    function isBossWave(waveNum) {
+      return waveNum > 0 && waveNum % 5 === 0;
+    }
+
+    function getRandomUniqueIndices(n, max) {
+      const set = new Set();
+      while (set.size < n) {
+        set.add(Math.floor(Math.random() * max));
+      }
+      return [...set];
+    }
+
+    function chooseThiefType() {
+      if (isBossWave(wave)) {
+        return { cls: "boss", icon: "😈" };
+      }
+      const r = Math.random();
+      if (r < 0.2) return { cls: "fast", icon: "👺" };
+      return { cls: "common", icon: "👹" };
+    }
+
+    function updateDifficultyAfterCatch() {
+      level = getLevelByCatch(caughtCount);
+
+      if (caughtCount === 0) {
+        thiefWaveCount = 1;
+      } else {
+        let min = Math.min(2, 1 + Math.floor(caughtCount / 4));
+        let max = Math.min(6, 2 + Math.floor(caughtCount / 2));
+        if (isBossWave(wave)) {
+          min = Math.min(4, max);
+          max = Math.min(6, Math.max(4, max));
+        }
+        thiefWaveCount = Math.floor(Math.random() * (max - min + 1)) + min;
+      }
+    }
+
+    function spawnWave() {
+      if (!gameActive) return;
+
+      currentWaveId++;
+      const thisWaveId = currentWaveId;
+      resetEffects();
+      updateDifficultyAfterCatch();
+      updateHUD();
+
+      const houseIndices = getRandomUniqueIndices(thiefWaveCount, 10);
+      const houses = document.querySelectorAll(".house");
+
+      if (isBossWave(wave)) {
+        messageEl.textContent = `보스 웨이브 ${wave}! 대규모 침입이다!`;
+        tipLineEl.textContent = "주민 긴급 신고: 동시 출몰 수가 많아졌습니다!";
+      } else {
+        messageEl.textContent = `웨이브 ${wave}! 도둑 ${thiefWaveCount}명 출몰!`;
+        const tips = [
+          "주민 신고: 3번 집 근처가 수상합니다.",
+          "주민 신고: 골목 쪽 움직임이 포착됐습니다.",
+          "주민 신고: 돈가방 아이콘이 보이면 바로 클릭하세요.",
+          "팁: 연속 체포 시 콤보 보너스 연출이 뜹니다."
+        ];
+        tipLineEl.textContent = tips[Math.floor(Math.random() * tips.length)];
+      }
+
+      playAlertBeep();
+
+      houseIndices.forEach(idx => {
+        const house = houses[idx];
+        const thief = house.querySelector(".thief");
+        const loot = house.querySelector(".loot");
+        const type = chooseThiefType();
+
+        thief.classList.remove("common", "fast", "boss");
+        thief.classList.add(type.cls, "show");
+        thief.textContent = type.icon;
+        thief.dataset.caught = "0";
+        loot.classList.add("show");
+      });
+
+      waveTimer = setTimeout(() => {
+        if (!gameActive || thisWaveId !== currentWaveId) return;
+
+        let escapedThisWave = 0;
+
+        houseIndices.forEach(idx => {
+          const house = houses[idx];
+          const thief = house.querySelector(".thief");
+          const loot = house.querySelector(".loot");
+
+          if (thief.classList.contains("show") && thief.dataset.caught !== "1") {
+            thief.classList.remove("show");
+            loot.classList.remove("show");
+            house.querySelector(".missed").classList.add("show");
+            escapedThisWave++;
+            setTimeout(() => {
+              house.querySelector(".missed").classList.remove("show");
+            }, 450);
+          }
+        });
+
+        if (escapedThisWave > 0) {
+          escapeCount += escapedThisWave;
+          combo = 0;
+          lives--;
+          updateHUD();
+          messageEl.textContent = `${escapedThisWave}명이 도망쳤다! 목숨 1 감소!`;
+          tipLineEl.textContent = "놓치면 목숨이 줄어듭니다. 침착하게 빠르게 클릭하세요.";
+        }
+
+        if (checkEndConditions()) return;
+
+        wave++;
+        setTimeout(() => {
+          spawnWave();
+        }, 500);
+      }, getWaveDuration());
+    }
+
+    function onCatchThief(e) {
+      if (!gameActive) return;
+
+      const thief = e.currentTarget;
+      if (!thief.classList.contains("show")) return;
+      if (thief.dataset.caught === "1") return;
+
+      const now = Date.now();
+      if (now - lastCatchTime < 1000) {
+        combo++;
+      } else {
+        combo = 1;
+      }
+      lastCatchTime = now;
+
+      thief.dataset.caught = "1";
+      const house = thief.closest(".house");
+      const loot = house.querySelector(".loot");
+
+      thief.classList.remove("show");
+      loot.classList.remove("show");
+      house.querySelector(".caught").classList.add("show");
+      setTimeout(() => {
+        house.querySelector(".caught").classList.remove("show");
+      }, 350);
+
+      caughtCount++;
+      if (combo >= 2) {
+        showCombo(combo + " COMBO!");
+      }
+
+      playSiren();
+      saveBestScore();
+      updateHUD();
+
+      if (checkEndConditions()) return;
+
+      const remainingVisible = [...document.querySelectorAll(".thief.show")].length;
+      if (remainingVisible === 0) {
+        clearTimeout(waveTimer);
+        messageEl.textContent = "웨이브 정리 완료! 다음 지역 순찰 중!";
+        tipLineEl.textContent = "좋습니다. 다음 신고 지점으로 이동합니다.";
+        wave++;
+        setTimeout(() => {
+          spawnWave();
+        }, 340);
+      } else {
+        messageEl.textContent = combo >= 2 ? `연속 체포 성공! ${combo} 콤보!` : "좋아! 남은 도둑도 잡아라!";
+      }
+    }
+
+    function startGlobalTimer() {
+      clearInterval(gameTimer);
+      gameTimer = setInterval(() => {
+        totalTime--;
+        updateHUD();
+
+        if (totalTime <= 0) {
+          totalTime = 0;
+          updateHUD();
+          endGame(false, "시간 종료! 순찰 시간이 끝났습니다.");
+        }
+      }, 1000);
+    }
+
+    function checkEndConditions() {
+      if (!gameActive) return true;
+
+      if (caughtCount >= GOAL) {
+        endGame(true, `대성공! 도둑 ${caughtCount}명을 체포해 동네를 지켰습니다.`);
+        return true;
+      }
+
+      if (lives <= 0) {
+        endGame(false, "목숨을 모두 잃었습니다. 주민들의 신고를 놓쳤습니다.");
+        return true;
+      }
+
+      return false;
+    }
+
+    function endGame(win, text) {
+      if (!gameActive) return;
+
+      gameActive = false;
+      clearInterval(gameTimer);
+      clearTimeout(waveTimer);
+      resetEffects();
+      saveBestScore();
+
+      overlay.classList.add("show");
+      overlayTitle.textContent = win ? "승리!" : "게임오버";
+      overlayText.innerHTML = `
+        ${text}<br><br>
+        체포 횟수: <b>${caughtCount}</b><br>
+        도주 횟수: <b>${escapeCount}</b><br>
+        도달 레벨: <b>${level}</b><br>
+        최고기록: <b>${bestScore}</b>
+      `;
+
+      messageEl.textContent = win ? "방범대장 임무 성공!" : "다시 도전해서 동네를 지켜보자!";
+      tipLineEl.textContent = win ? "축하합니다. 오늘의 순찰은 완벽했습니다." : "팁: 놓치지 않게 화면 전체를 넓게 보세요.";
+      restartBtn.style.display = "inline-block";
+      startBtn.disabled = false;
+      startBtn.textContent = "게임 시작";
+    }
+
+    function startGame() {
+      clearInterval(gameTimer);
+      clearTimeout(waveTimer);
+
+      caughtCount = 0;
+      escapeCount = 0;
+      level = 1;
+      wave = 1;
+      thiefWaveCount = 1;
+      totalTime = 60;
+      lives = 3;
+      combo = 0;
+      lastCatchTime = 0;
+      currentWaveId = 0;
+      gameActive = true;
+
+      overlay.classList.remove("show");
+      restartBtn.style.display = "inline-block";
+      startBtn.disabled = true;
+      startBtn.textContent = "게임 진행중";
+      messageEl.textContent = "순찰 시작! 첫 신고 지역으로 이동합니다.";
+      tipLineEl.textContent = "첫 웨이브는 1명입니다. 침착하게 시작하세요.";
+
+      resetEffects();
+      updateHUD();
+      startGlobalTimer();
+      spawnWave();
+    }
+
+    createHouses();
+    updateHUD();
+
+    startBtn.addEventListener("click", startGame);
+    restartBtn.addEventListener("click", startGame);
+    overlayRestartBtn.addEventListener("click", startGame);
+  </script>
+</body>
+</html>
