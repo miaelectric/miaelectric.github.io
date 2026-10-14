@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>miaelectric의 서재</title>
+<meta name="description" content="책과 영화를 좋아하는 대학생 miaelectric의 개인 페이지">
+<style>
+  :root {
+    --paper: #f7f3ec;
+    --card: #fffdf9;
+    --ink: #2a2622;
+    --soft: #6b6259;
+    --line: #e4dccf;
+    --accent: #b5502f;
+    --accent-soft: #f3e1d8;
+    --star: #d99a1e;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #1b1917;
+      --card: #24211e;
+      --ink: #ede6dc;
+      --soft: #a89e92;
+      --line: #3a3530;
+      --accent: #e47b56;
+      --accent-soft: #3b2a23;
+      --star: #f0b84a;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #1b1917;
+    --card: #24211e;
+    --ink: #ede6dc;
+    --soft: #a89e92;
+    --line: #3a3530;
+    --accent: #e47b56;
+    --accent-soft: #3b2a23;
+    --star: #f0b84a;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+    line-height: 1.7;
+  }
+  .serif { font-family: "Nanum Myeongjo", "AppleMyungjo", "Batang", Georgia, serif; }
+  a { color: var(--accent); }
+
+  /* ---------- nav ---------- */
+  nav {
+    position: sticky; top: 0; z-index: 10;
+    background: color-mix(in srgb, var(--paper) 88%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--line);
+  }
+  .nav-inner {
+    max-width: 880px; margin: 0 auto; padding: 10px 16px;
+    display: flex; align-items: center; gap: 4px;
+  }
+  .logo { font-weight: 700; margin-right: auto; text-decoration: none; color: var(--ink); }
+  .nav-inner a.link {
+    color: var(--soft); text-decoration: none; padding: 6px 10px; border-radius: 8px; font-size: 0.95rem;
+  }
+  .nav-inner a.link:hover, .nav-inner a.link.active { color: var(--ink); background: var(--accent-soft); }
+  #theme-btn {
+    border: 1px solid var(--line); background: var(--card); color: var(--ink);
+    border-radius: 999px; width: 36px; height: 36px; cursor: pointer; font-size: 1rem; margin-left: 6px;
+  }
+  @media (max-width: 560px) {
+    .nav-inner a.link { padding: 6px 6px; font-size: 0.88rem; }
+    .logo { font-size: 0.95rem; }
+  }
+
+  main { max-width: 880px; margin: 0 auto; padding: 0 16px 80px; }
+  section { padding-top: 64px; scroll-margin-top: 48px; }
+  h2 { font-size: 1.6rem; margin: 0 0 4px; }
+  .sub { color: var(--soft); margin: 0 0 24px; }
+
+  /* ---------- hero ---------- */
+  .hero { padding-top: 72px; display: grid; grid-template-columns: auto 1fr; gap: 28px; align-items: center; }
+  .avatar {
+    width: 120px; height: 120px; border-radius: 50%;
+    background: var(--accent-soft); display: grid; place-items: center; font-size: 3.4rem;
+    border: 1px solid var(--line);
+  }
+  .hero h1 { font-size: clamp(1.9rem, 5vw, 2.8rem); line-height: 1.2; margin: 0 0 10px; letter-spacing: -0.01em; }
+  .hero p { margin: 0; color: var(--soft); font-size: 1.05rem; }
+  .tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+  .tag {
+    background: var(--card); border: 1px solid var(--line); border-radius: 999px;
+    padding: 3px 12px; font-size: 0.88rem;
+  }
+  @media (max-width: 560px) {
+    .hero { grid-template-columns: 1fr; text-align: center; gap: 16px; }
+    .avatar { margin: 0 auto; width: 96px; height: 96px; font-size: 2.8rem; }
+    .tags { justify-content: center; }
+  }
+
+  .quote {
+    margin-top: 40px; padding: 22px 24px; border-left: 4px solid var(--accent);
+    background: var(--card); border-radius: 0 12px 12px 0;
+  }
+  .quote p { margin: 0; font-size: 1.15rem; transition: opacity .3s; }
+  .quote small { color: var(--soft); display: block; margin-top: 6px; }
+  .quote button {
+    margin-top: 10px; background: none; border: 0; padding: 0; color: var(--accent);
+    cursor: pointer; font-size: 0.9rem;
+  }
+
+  /* ---------- cards ---------- */
+  .toolbar { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+  .chip {
+    border: 1px solid var(--line); background: var(--card); color: var(--soft);
+    border-radius: 999px; padding: 5px 14px; cursor: pointer; font-size: 0.9rem;
+  }
+  .chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
+  .card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    padding: 18px; display: flex; flex-direction: column; gap: 6px;
+    transition: transform .15s, box-shadow .15s;
+  }
+  .card:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,.07); }
+  .card .top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+  .card h3 { margin: 0; font-size: 1.08rem; line-height: 1.4; }
+  .card .meta { color: var(--soft); font-size: 0.88rem; }
+  .card .note { margin: 4px 0 0; font-size: 0.95rem; }
+  .badge {
+    flex-shrink: 0; font-size: 0.75rem; padding: 2px 8px; border-radius: 6px;
+    background: var(--accent-soft); color: var(--accent); font-weight: 600;
+  }
+  .stars { color: var(--star); letter-spacing: 1px; }
+  .progress { height: 6px; background: var(--line); border-radius: 99px; overflow: hidden; margin-top: 6px; }
+  .progress span { display: block; height: 100%; background: var(--accent); border-radius: 99px; }
+  .empty { color: var(--soft); grid-column: 1 / -1; }
+
+  /* ---------- courses ---------- */
+  .courses { display: grid; gap: 10px; }
+  .course {
+    display: grid; grid-template-columns: 76px 1fr auto; gap: 14px; align-items: center;
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px;
+  }
+  .course .day { font-weight: 700; color: var(--accent); text-align: center; line-height: 1.3; }
+  .course .day small { display: block; font-weight: 400; color: var(--soft); font-size: 0.78rem; }
+  .course h3 { margin: 0; font-size: 1rem; }
+  .course .meta { color: var(--soft); font-size: 0.88rem; }
+  .course.today { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; }
+  .course .now { font-size: 0.75rem; color: #fff; background: var(--accent); padding: 2px 8px; border-radius: 6px; }
+  @media (max-width: 480px) {
+    .course { grid-template-columns: 60px 1fr; }
+    .course .now { grid-column: 2; justify-self: start; }
+  }
+
+  /* ---------- play & footer ---------- */
+  .play {
+    display: flex; align-items: center; gap: 18px; text-decoration: none; color: var(--ink);
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 18px 20px;
+  }
+  .play:hover { border-color: var(--accent); }
+  .play .icon { font-size: 2.2rem; }
+  .play b { display: block; }
+  .play span { color: var(--soft); font-size: 0.92rem; }
+  footer { text-align: center; color: var(--soft); font-size: 0.88rem; padding: 32px 16px 48px; border-top: 1px solid var(--line); }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a class="logo" href="#top">📚 miaelectric</a>
+    <a class="link" href="#books">책</a>
+    <a class="link" href="#movies">영화</a>
+    <a class="link" href="#study">강의</a>
+    <button id="theme-btn" aria-label="다크 모드 전환">🌙</button>
+  </div>
+</nav>
+
+<main id="top">
+  <header class="hero">
+    <div class="avatar" aria-hidden="true">📖</div>
+    <div>
+      <h1 class="serif">안녕하세요,<br>책과 영화를 사랑하는 대학생입니다.</h1>
+      <p>낮에는 강의실에서 배우고, 밤에는 책장과 스크린 속을 여행합니다.</p>
+      <div class="tags">
+        <span class="tag">📚 독서</span>
+        <span class="tag">🎬 영화</span>
+        <span class="tag">🎓 대학생</span>
+        <span class="tag">☕ 카페에서 읽기</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="quote">
+    <p class="serif" id="quote-text"></p>
+    <small id="quote-from"></small>
+    <button id="quote-btn">다른 문장 보기 →</button>
+  </div>
+
+  <section id="books">
+    <h2 class="serif">📚 나의 책장</h2>
+    <p class="sub">읽고 있는 책과 마음에 남은 책들</p>
+    <div class="toolbar" id="book-filters"></div>
+    <div class="grid" id="book-list"></div>
+  </section>
+
+  <section id="movies">
+    <h2 class="serif">🎬 영화 노트</h2>
+    <p class="sub">다시 보고 싶은 영화와 짧은 감상</p>
+    <div class="toolbar" id="movie-filters"></div>
+    <div class="grid" id="movie-list"></div>
+  </section>
+
+  <section id="study">
+    <h2 class="serif">🎓 이번 학기 강의</h2>
+    <p class="sub" id="today-label">듣고 있는 수업들</p>
+    <div class="courses" id="course-list"></div>
+  </section>
+
+  <section id="play">
+    <h2 class="serif">🎮 잠깐 쉬어가기</h2>
+    <p class="sub">공부하다 지칠 때 한 판</p>
+    <a class="play" href="snake.html">
+      <div class="icon">🐍</div>
+      <div><b>스네이크 게임</b><span>직접 만든 게임 · TOP 3에 도전해 보세요</span></div>
+    </a>
+  </section>
+</main>
+
+<footer>
+  © <span id="year"></span> miaelectric · 오늘도 한 페이지, 한 장면씩
+</footer>
+
+<script>
+  // ============================================================
+  //  여기 내용만 바꾸면 페이지가 바뀌어요 ✏️
+  // ============================================================
+
+  // status: '읽는 중' | '다 읽음' | '읽고 싶음'   rating: 0~5   progress: 0~100 (읽는 중일 때)
+  const BOOKS = [
+    { title: '데미안', author: '헤르만 헤세', status: '다 읽음', rating: 5,
+      note: '알을 깨고 나오는 이야기. 스무 살에 다시 읽으니 또 다르게 읽혔다.' },
+    { title: '아몬드', author: '손원평', status: '다 읽음', rating: 4,
+      note: '감정을 배워가는 소년의 이야기. 단숨에 읽었다.' },
+    { title: '사피엔스', author: '유발 하라리', status: '읽는 중', progress: 45,
+      note: '강의 과제와 같이 읽는 중. 생각할 거리가 많다.' },
+    { title: '1984', author: '조지 오웰', status: '읽고 싶음',
+      note: '영화 수업에서 언급돼서 꼭 읽어보고 싶어졌다.' },
+  ];
+
+  // status: '봤음' | '보고 싶음'
+  const MOVIES = [
+    { title: '인셉션', year: 2010, director: '크리스토퍼 놀란', status: '봤음', rating: 5,
+      note: '볼 때마다 새로운 장면이 보이는 영화.' },
+    { title: '리틀 포레스트', year: 2018, director: '임순례', status: '봤음', rating: 4,
+      note: '시험 끝나고 보면 마음이 편안해진다.' },
+    { title: '라라랜드', year: 2016, director: '데이미언 셔젤', status: '봤음', rating: 5,
+      note: '마지막 장면에서 매번 울컥한다.' },
+    { title: '헤어질 결심', year: 2022, director: '박찬욱', status: '보고 싶음',
+      note: '방학에 극장 재개봉하면 보러 갈 예정.' },
+  ];
+
+  // day: 0=일 1=월 2=화 3=수 4=목 5=금 6=토
+  const COURSES = [
+    { day: 1, time: '10:30', name: '현대 문학의 이해', place: '인문관 203' },
+    { day: 2, time: '13:00', name: '영화와 사회', place: '미디어관 101' },
+    { day: 3, time: '10:30', name: '현대 문학의 이해', place: '인문관 203' },
+    { day: 4, time: '15:00', name: '글쓰기와 비평', place: '인문관 310' },
+  ];
+
+  // 직접 지은 문장이나 좋아하는 문장을 넣어보세요
+  const QUOTES = [
+    { text: '좋은 책은 다 읽은 뒤에야 시작된다.', from: '나의 독서 노트' },
+    { text: '영화관 불이 꺼지는 순간, 하루가 잠시 멈춘다.', from: '나의 영화 노트' },
+    { text: '오늘 배운 한 줄이 내일의 나를 만든다.', from: '강의실에서' },
+    { text: '책장을 넘기는 소리는 가장 조용한 모험이다.', from: '나의 독서 노트' },
+  ];
+
+  // ============================================================
+
+  const $ = id => document.getElementById(id);
+  const el = (tag, cls, text) => {
+    const n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+  };
+  const stars = r => '★'.repeat(r) + '☆'.repeat(5 - r);
+
+  // ---------- theme ----------
+  const themeBtn = $('theme-btn');
+  function applyTheme(t) {
+    if (t) document.documentElement.dataset.theme = t;
+    const dark = t ? t === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    themeBtn.textContent = dark ? '☀️' : '🌙';
+  }
+  let savedTheme = null;
+  try { savedTheme = localStorage.getItem('theme'); } catch {}
+  applyTheme(savedTheme);
+  themeBtn.addEventListener('click', () => {
+    const now = themeBtn.textContent === '☀️' ? 'light' : 'dark';
+    try { localStorage.setItem('theme', now); } catch {}
+    applyTheme(now);
+  });
+
+  // ---------- quote ----------
+  let qi = Math.floor(Math.random() * QUOTES.length);
+  function showQuote() {
+    const q = QUOTES[qi];
+    $('quote-text').textContent = `“${q.text}”`;
+    $('quote-from').textContent = `— ${q.from}`;
+  }
+  $('quote-btn').addEventListener('click', () => {
+    const p = $('quote-text');
+    p.style.opacity = 0;
+    setTimeout(() => { qi = (qi + 1) % QUOTES.length; showQuote(); p.style.opacity = 1; }, 250);
+  });
+  showQuote();
+
+  // ---------- filterable lists ----------
+  function setupList({ items, filtersEl, listEl, statuses, render }) {
+    let current = '전체';
+    const options = ['전체', ...statuses];
+    options.forEach(s => {
+      const count = s === '전체' ? items.length : items.filter(i => i.status === s).length;
+      const b = el('button', 'chip', `${s} ${count}`);
+      b.setAttribute('aria-pressed', s === current);
+      b.addEventListener('click', () => {
+        current = s;
+        filtersEl.querySelectorAll('.chip').forEach(c => c.setAttribute('aria-pressed', c === b));
+        draw();
+      });
+      filtersEl.append(b);
+    });
+    function draw() {
+      listEl.textContent = '';
+      const shown = items.filter(i => current === '전체' || i.status === current);
+      if (!shown.length) listEl.append(el('p', 'empty', '아직 없어요.'));
+      shown.forEach(i => listEl.append(render(i)));
+    }
+    draw();
+  }
+
+  setupList({
+    items: BOOKS, filtersEl: $('book-filters'), listEl: $('book-list'),
+    statuses: ['읽는 중', '다 읽음', '읽고 싶음'],
+    render(b) {
+      const card = el('article', 'card');
+      const top = el('div', 'top');
+      top.append(el('h3', 'serif', b.title), el('span', 'badge', b.status));
+      card.append(top, el('div', 'meta', b.author));
+      if (b.rating) card.append(el('div', 'stars', stars(b.rating)));
+      if (b.status === '읽는 중' && b.progress != null) {
+        const bar = el('div', 'progress');
+        const fill = el('span');
+        fill.style.width = b.progress + '%';
+        bar.append(fill);
+        card.append(el('div', 'meta', `${b.progress}% 읽음`), bar);
+      }
+      if (b.note) card.append(el('p', 'note', b.note));
+      return card;
+    },
+  });
+
+  setupList({
+    items: MOVIES, filtersEl: $('movie-filters'), listEl: $('movie-list'),
+    statuses: ['봤음', '보고 싶음'],
+    render(m) {
+      const card = el('article', 'card');
+      const top = el('div', 'top');
+      top.append(el('h3', 'serif', m.title), el('span', 'badge', m.status));
+      card.append(top, el('div', 'meta', `${m.year} · ${m.director}`));
+      if (m.rating) card.append(el('div', 'stars', stars(m.rating)));
+      if (m.note) card.append(el('p', 'note', m.note));
+      return card;
+    },
+  });
+
+  // ---------- courses ----------
+  const DAYS = ['일', '월', '화', '수', '목', '금', '토'];
+  const today = new Date().getDay();
+  const todayCount = COURSES.filter(c => c.day === today).length;
+  $('today-label').textContent = todayCount
+    ? `오늘(${DAYS[today]}요일)은 수업이 ${todayCount}개 있어요`
+    : `오늘(${DAYS[today]}요일)은 수업이 없어요 — 책 읽기 좋은 날!`;
+  [...COURSES].sort((a, b) => a.day - b.day || a.time.localeCompare(b.time)).forEach(c => {
+    const row = el('div', 'course' + (c.day === today ? ' today' : ''));
+    const day = el('div', 'day', DAYS[c.day]);
+    day.append(el('small', '', c.time));
+    const info = el('div');
+    info.append(el('h3', '', c.name), el('div', 'meta', c.place));
+    row.append(day, info);
+    if (c.day === today) row.append(el('span', 'now', '오늘'));
+    $('course-list').append(row);
+  });
+
+  // ---------- nav highlight ----------
+  const links = [...document.querySelectorAll('.nav-inner a.link')];
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + e.target.id));
+      }
+    });
+  }, { rootMargin: '-40% 0px -55% 0px' });
+  ['books', 'movies', 'study'].forEach(id => observer.observe($(id)));
+
+  $('year').textContent = new Date().getFullYear();
+</script>
+</body>
+</html>
